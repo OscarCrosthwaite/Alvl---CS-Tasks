@@ -1,3 +1,4 @@
+#program that takes a three digit number and displays it in hundreds, tens, and ones, 
 userNumber = int(input("Please input a three digit number:"))
 hundreds = userNumber//100
 tens = (userNumber - (userNumber//100)*100)//10
