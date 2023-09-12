@@ -1,0 +1,5 @@
+hours = int(input("hours: "))
+minutes = int(input("minutes: "))
+seconds = int(input("seconds: "))
+totalSeconds = seconds + (minutes * 60) + (hours * 360)
+print(totalSeconds)
