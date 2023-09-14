@@ -20,5 +20,14 @@ elif playerAction == "r":
         print("Player win!")
     else:
         print("error")
+elif playerAction == "s":
+    if computerAction == "p":
+        print("Player win!")
+    elif computerAction == "r":
+        print("Computer win!")
+    elif computerAction == "s":
+        print("Draw!")
+    else:
+        print("error")
 
     
