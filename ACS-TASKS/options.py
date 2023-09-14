@@ -2,6 +2,7 @@
 while True:
     userInput = input("Please select an option between one to three: ")
     if userInput == "1" or userInput == "2" or userInput == "3":
+        #ensures input is one, two or three
         print(f"Option {userInput} selected")
         break
     else:

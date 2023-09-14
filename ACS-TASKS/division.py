@@ -2,5 +2,8 @@
 numberOne = int(input("Please choose a number to be divided: "))
 numberTwo = int(input("Please choose a number to be the divider: "))
 valueOne = numberOne//numberTwo
+#divides numbers
 valueTwo = numberOne % numberTwo
+#finds remainder
 print(f"The number is {valueOne} and the remainder is {valueTwo}.")
+#prints numbers
