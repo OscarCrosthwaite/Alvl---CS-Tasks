@@ -84,8 +84,8 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    print()
-    print()
+    
+    
     pins3 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins4 = int(input("How many bowling pins did you knock down on your second attempt?: "))
     while fact == "false":
@@ -132,8 +132,8 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    print()
-    print()
+    
+    
     pins5 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins6 = int(input("How many bowling pins did you knock down on your second attempt?: "))
     while fact == "false":
@@ -180,8 +180,8 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    print()
-    print()
+    
+    
     pins7 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins8 = int(input("How many bowling pins did you knock down on your second attempt?: "))
     while fact == "false":
