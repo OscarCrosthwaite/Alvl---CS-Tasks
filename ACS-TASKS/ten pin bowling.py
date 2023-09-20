@@ -16,6 +16,8 @@ Pins8 = 0
 
 def factTrue():
     fact = "true"
+def factFalse():
+    fact = "false"
 def error():
     print("Error!")
 def roundCount():
@@ -84,7 +86,7 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    
+    factFalse()
     
     pins3 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins4 = int(input("How many bowling pins did you knock down on your second attempt?: "))
@@ -132,7 +134,7 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    
+    factFalse()
     
     pins5 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins6 = int(input("How many bowling pins did you knock down on your second attempt?: "))
@@ -180,7 +182,7 @@ while rounds < 11:
                 spare = "false"
                 factTrue()
     roundCount()
-    
+    factFalse()
     
     pins7 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins8 = int(input("How many bowling pins did you knock down on your second attempt?: "))
