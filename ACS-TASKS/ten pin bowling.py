@@ -1,5 +1,5 @@
 bowlingPoints = 0
-rounds = 1
+rounds = 0
 
 fact = "false"
 strike = "false"
@@ -21,7 +21,7 @@ def factFalse():
 def error():
     print("Error!")
 def roundCount():
-    rounds = rounds + 1
+    rounds += 1
 def Strike():
     print("Strike!")
     strike = "true"
@@ -85,150 +85,150 @@ while rounds < 11:
                 strike = "false"
                 spare = "false"
                 factTrue()
-        roundCount()
-        factFalse()
+    rounds += 1
+        
     
     pins3 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins4 = int(input("How many bowling pins did you knock down on your second attempt?: "))
-    while fact == "false":
+    while True:
         if Pins3 == 10:
             bowlingPoints = bowlingPoints + 10
             Strike()
-            factTrue()
+            break
         elif Pins3 == 10 and Pins5 == 10:
             bowlingPoints = bowlingPoints + 20
             Double()
-            factTrue()
+            break
         elif Pins3 == 10 and Pins5 == 10 and Pins7 == 10:
             Turkey()
-            factTrue()
+            break
             bowlingPoints = bowlingPoints + 30
         elif Pins3 == 10 and Pins5 == 10 and Pins7 == 10 and Pins1 == 10:
             bowlingPoints = bowlingPoints + 40
             FourBagger()
-            factTrue()
+            break
         elif Pins3 + Pins4 == 10:
             bowlingPoints = bowlingPoints + 10
             if strike == "true":
                 bowlingPoints = bowlingPoints + 10
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins1
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
         else:
             bowlingPoints = bowlingPoints + Pins3 + Pins4
             if strike == "true":
                 bowlingPoints = bowlingPoints + Pins3 + Pins4
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins3
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             else:
                 strike = "false"
                 spare = "false"
-                factTrue()
-        roundCount()
-        factFalse()
+                break
+    rounds += 1
     
     pins5 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins6 = int(input("How many bowling pins did you knock down on your second attempt?: "))
-    while fact == "false":
+    while True:
         if Pins5 == 10:
             bowlingPoints = bowlingPoints + 10
             Strike()
-            factTrue()
+            break
         elif Pins5 == 10 and Pins7 == 10:
             bowlingPoints = bowlingPoints + 20
             Double()
-            factTrue()
+            break
         elif Pins5 == 10 and Pins7 == 10 and Pins1 == 10:
             Turkey()
-            factTrue()
             bowlingPoints = bowlingPoints + 30
+            break
         elif Pins5 == 10 and Pins7 == 10 and Pins1 == 10 and Pins3 == 10:
             bowlingPoints = bowlingPoints + 40
             FourBagger()
-            factTrue()
+            break
         elif Pins5 + Pins6 == 10:
             bowlingPoints = bowlingPoints + 10
             if strike == "true":
                 bowlingPoints = bowlingPoints + 10
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins5
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
+            else:
+                break
         else:
             bowlingPoints = bowlingPoints + Pins5 + Pins6
             if strike == "true":
                 bowlingPoints = bowlingPoints + Pins5 + Pins6
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins5
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             else:
                 strike = "false"
                 spare = "false"
-                factTrue()
-        roundCount()
-        factFalse()
+                break
+    rounds += 1
+        
     
     pins7 = int(input("How many bowling pins did you knock down on your first attempt?: "))
     Pins8 = int(input("How many bowling pins did you knock down on your second attempt?: "))
-    while fact == "false":
+    while True:
         if Pins7 == 10:
             bowlingPoints = bowlingPoints + 10
             Strike()
-            factTrue()
+            break
         elif Pins7 == 10 and Pins1 == 10:
             bowlingPoints = bowlingPoints + 20
             Double()
-            factTrue()
+            break
         elif Pins7 == 10 and Pins1 == 10 and Pins3 == 10:
             Turkey()
-            factTrue()
             bowlingPoints = bowlingPoints + 30
+            break
         elif Pins7 == 10 and Pins1 == 10 and Pins3 == 10 and Pins5 == 10:
             bowlingPoints = bowlingPoints + 40
             FourBagger()
-            factTrue()
+            break
         elif Pins7 + Pins8 == 10:
             bowlingPoints = bowlingPoints + 10
             if strike == "true":
                 bowlingPoints = bowlingPoints + 10
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins1
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
         else:
             bowlingPoints = bowlingPoints + Pins7 + Pins8
             if strike == "true":
                 bowlingPoints = bowlingPoints + Pins7 + Pins8
-                factTrue()
+                break
             elif spare == "true":
                 bowlingPoints = bowlingPoints + Pins7
                 strike = "false"
                 spare = "false"
-                factTrue()
+                break
             else:
                 strike = "false"
                 spare = "false"
-                factTrue()
-        roundCount()
-        factFalse()
+                break
+    rounds += 1
 print(bowlingPoints)
