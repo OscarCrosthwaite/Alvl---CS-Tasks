@@ -1,5 +1,6 @@
 #initialize pygame
 import pygame
+import math
 pygame.init()
 
 #pygame doesnt have its own colours
@@ -35,24 +36,35 @@ while not done:
             done = True #flag that we are done and to exit the loop
     
     # -game logic is put here-
-    
-    x_val += 5
+    y_val = math.cos(x_val) + 100
+    x_val += 1
     if x_val > 700:
         x_val = -750
     x2_val += 5
     if x2_val > 700:
         x2_val = -750
+    
 
     # -drawing code is put here-
     screen.fill(WHITE)
+    if x_val < 0:
+        screen.fill(BLACK)
+    if x2_val < 0:
+        screen.fill(WHITE)
+    
     #put all drawing code beneath the screen.fill command
-    pygame.draw.rect(screen, BLACK, [200, 200, 200, 200,])
-    pygame.draw.rect(screen, BLACK, [250, 150, 50, 75])
+    
+
+    pygame.draw.rect(screen, GREEN, [0, 250, 700, 250])
+    pygame.draw.rect(screen, RED, [200, 200, 200, 200,])
+    pygame.draw.rect(screen, RED, [225, 125, 50, 75])
+    pygame.draw.polygon(screen, RED, [(200, 200), (400, 200), (300, 150)])
     pygame.draw.rect(screen, WHITE, [300, 325, 50, 75])
     pygame.draw.rect(screen, WHITE, [250, 250, 40, 40])
     pygame.draw.rect(screen, WHITE, [335, 250, 40, 40])
     pygame.draw.circle(screen, YELLOW, [x_val, y_val], 25)
-    pygame.draw.circle(screen, BLACK, [x2_val, y2_val], 25)
+    pygame.draw.circle(screen, WHITE, [x2_val, y2_val], 25)
+    pygame.draw.circle(screen, BLACK, [x2_val + 5, y2_val -3], 25)
 
     
 
