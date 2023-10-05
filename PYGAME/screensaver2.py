@@ -21,8 +21,7 @@ y_val2 = 15
 y_off2 = 5
 
 lifes = 5
-font = pygame.font.SysFont("Arial", 36)
-txtsurf = font.render(lifes, True, WHITE)
+
 
 
 done = False
