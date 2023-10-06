@@ -12,3 +12,13 @@ print(total)
 
 average = total / len(num)
 print(average)
+
+
+
+
+
+
+
+
+
+
