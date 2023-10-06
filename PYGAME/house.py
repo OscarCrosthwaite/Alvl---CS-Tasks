@@ -36,8 +36,8 @@ while not done:
             done = True #flag that we are done and to exit the loop
     
     # -game logic is put here-
-    y_val = math.cos(x_val) + 100
-    x_val += 1
+    y_val = 50
+    x_val += 5
     if x_val > 700:
         x_val = -750
     x2_val += 5
