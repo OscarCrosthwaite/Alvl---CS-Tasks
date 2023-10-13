@@ -18,7 +18,7 @@ screen = pygame.display.set_mode(size)
 #variables
 x_val = 25
 y_val = 15
-x_off = 8
+x_off = 5
 y_off = 4
 
 y_val2 = 15
@@ -49,11 +49,11 @@ while not done:
     #also code that increases score
     if x_val > 478 and x_val < 495:
         if y_val2 > y_val - 5 and y_val2 < y_val + 60:
-            x_off = -5
+            x_off = -x_off * 1.1
             score += 1
     if x_val < 10 and x_val > -5:
         if y_val2 > y_val - 5 and y_val2 < y_val + 60:
-            x_off = 5
+            x_off = -x_off * 1.1
             score += 1
     
     #code that makes ball bounce of the top and bottom wall
@@ -70,13 +70,13 @@ while not done:
         score = 0
         x_val = 25
         y_val = 15
-        x_off = 5
+        x_off = 4
         y_off = 4
     if x_val > 500:
         score = 0
         x_val = 25
         y_val = 15
-        x_off = 5
+        x_off = 4
         y_off = 4
     
     
