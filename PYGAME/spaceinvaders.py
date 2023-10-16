@@ -1,4 +1,4 @@
-# x_list = pygame.sprite.spritecollide(player, y_list, False)
+
 #programarcadegames.com
 
 import pygame
@@ -49,8 +49,12 @@ class Bullets(pygame.sprite.Sprite):
         self.rect.y = s_playerY
     def update(self):
         self.rect.y = self.rect.y - 2
-
-
+    #def checkCollision(self, s_list):
+        #s_list = pygame.sprite.spritecollide(Bullets, alien)
+        #if s_list == True:
+            #score += 1
+            
+            
 
 class Invaders(pygame.sprite.Sprite):
 
@@ -74,7 +78,9 @@ class Invaders(pygame.sprite.Sprite):
 # end Class Snow
 
 # Global Variables
-player_speed = 0
+score = 0
+player_speed = 3
+bullet_speed = 0
 playerX = 300
 playerY = 450
 printbullet = False
@@ -92,7 +98,7 @@ player_group.add(player_character)
 
 bullet_group = pygame.sprite.Group()
 bullet = Bullets(10, 10, playerX, playerY)
-bullet_group.add(bullet)
+#
 
 
 while not done:
@@ -101,34 +107,34 @@ while not done:
             done =  True 
         keys = pygame.key.get_pressed()
         player_speed = 0
+        playerY = -100
         if keys[pygame.K_a]:
             player_speed = -3
         if keys[pygame.K_d]:
             player_speed = 3
         if keys[pygame.K_w]:
-            printbullet = True
+            bullet_group.add(bullet)
+            
 
-    #coding code
+    #got to hereww
+    for bullet in bullet_group:
+        block_hit_list = pygame.sprite.spritecollide(bullet, invaders_group, True)
+        for alien in invaders_group:
+            bullet_group.remove(bullet)
+            invaders_group.remove(alien)
+            score += 1
+
     invaders_group.update()
     player_group.update()
     bullet_group.update()
 
     
     
-    #drawing code
+    
     screen.fill(BLACK)
     invaders_group.draw(screen)
     player_group.draw(screen)
     bullet_group.draw(screen)
-    
-
-
-
-
-
-
-
-
 
     pygame.display.flip()
     clock.tick(60)
