@@ -2,6 +2,7 @@
 import pygame
 import math
 import random
+import time
 pygame.init()
 
 # colour
@@ -30,6 +31,14 @@ class player(pygame.sprite.Sprite):
         self.rect.y = s_playerY
     def update(self, s_player_speed):
         self.rect.x = self.rect.x + s_player_speed
+    def coordUpdate(self):
+        return self.rect.x
+        
+
+
+        
+
+        
 
 class bullets(pygame.sprite.Sprite):
     def __init__(self, s_width, s_length, s_playerX, s_playerY):
@@ -38,28 +47,30 @@ class bullets(pygame.sprite.Sprite):
         self.image.fill(RED)
         self.rect=self.image.get_rect()
         self.rect.x = s_playerX
-        self.rect.x = s_playerY 
+        self.rect.y = s_playerY 
     def update(self, s_bulletSpeed):
         self.rect.y = self.rect.y - s_bulletSpeed
 
 class invaders(pygame.sprite.Sprite):
-    def __init__(self, s_width, s_length):
+    def __init__(self, s_width, s_length, s_invaderX, s_invaderY):
         super().__init__()
         self.image = pygame.Surface([s_width, s_length])
         self.image.fill(RED)
         self.rect=self.image.get_rect()
-        self.rect.x = random.randrange(0, 500)
-        self.rect.y = random.randrange(-50, 0)
-    def update(self, ):
-        if self.rect.y > 500:
-            self.rect.y = random.randint(-50, 0)
-            self.speed = 2
-        else:
-            self.rect.y = self.rect.y + self.speed
-# global variables
-score = 0
+        self.rect.x = 10 * s_invaderX
+        self.rect.y = -10 * s_invaderY
+    def update(self, speed):
+        self.rect.y = self.rect.y + speed
+
+
 playerX = 250
 playerY = 475
+invader_speed = 1
+bullet_speed = 5
+invaderX = 1
+invaderY = 1
+cooldownOn = True
+
 
 
 
@@ -69,13 +80,17 @@ playerCharacter = player(25, 25, playerX , playerY)
 playerGroup.add(playerCharacter)
 
 bulletGroup = pygame.sprite.Group()
-bullet = bullets(10, 10, playerX, playerY)
+
 
 invaderGroup = pygame.sprite.Group()
-invaderNumber = 50
-for i in range(0, invaderNumber):
-    invader = invaders(10, 10)
-    invaderGroup.add(invader)
+invaderNumber = 7
+for j in range(0, 3):
+    invaderY = j * 6
+    for i in range(0, invaderNumber):
+        invaderX = i * 4.8
+        invader = invaders(20, 20, invaderX, invaderY)
+        invaderGroup.add(invader)
+
 
 # game loop
 while not done:
@@ -89,18 +104,27 @@ while not done:
         if keys[pygame.K_d]:
             player_speed = 3
         if keys[pygame.K_w]:
-            bulletGroup.add(bullet)
+            if cooldownOn == True:
+                playerX = playerCharacter.coordUpdate()
+                bullet = bullets(10, 10, playerX, playerY)
+                bulletGroup.add(bullet)
+                cooldownOn = False
+                bulletCooldown = pygame.time.get_ticks()
+            if pygame.time.get_ticks() - bulletCooldown >= 1000:
+                cooldownOn = True
+
 
     for bullet in bulletGroup:
         blockHitList = pygame.sprite.spritecollide(bullet, invaderGroup, True)
         for alien in blockHitList:
             bulletGroup.remove(bullet)
             invaderGroup.remove(alien)
-            score += 1
+
+            
 
     playerGroup.update(player_speed)
-    bulletGroup.update()
-    invaderGroup.update()
+    bulletGroup.update(bullet_speed)
+    invaderGroup.update(invader_speed)
 
     screen.fill(BLACK)
     playerGroup.draw(screen)
