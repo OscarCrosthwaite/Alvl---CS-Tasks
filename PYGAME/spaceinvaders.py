@@ -31,10 +31,10 @@ class player(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = 300
         self.rect.y = 375
+        s_playerX
     #allows player movement
-    def update(self):
+    def update(self, s_playerX):
         self.rect.x = self.rect.x + player_speed
-        playerX = self.rect.x
         
 class Bullets(pygame.sprite.Sprite):
     #creates bullet sprite
@@ -77,8 +77,9 @@ class Invaders(pygame.sprite.Sprite):
 score = 0
 player_speed = 3
 bullet_speed = 0
+playerX = 300
+playerY = 300
 
-printbullet = False
 
     #Sprite Groups
 #invaders group
@@ -124,7 +125,7 @@ while not done:
 
     #update sprites
     invaders_group.update()
-    player_group.update()
+    player_group.update(playerX)
     bullet_group.update()
     
     #draws sprites
