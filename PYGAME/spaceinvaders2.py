@@ -59,8 +59,22 @@ class invaders(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = 10 * s_invaderX
         self.rect.y = -10 * s_invaderY
-    def update(self, speed):
-        self.rect.y = self.rect.y + speed
+    def update(self, s_cooldown1, s_yMovement, s_xMovement):
+        if s_cooldown1 == True:
+            self.rect.y = self.rect.y + s_yMovement
+            s_cooldown1 = False
+            timer = pygame.time.get_ticks
+        if pygame.time.get_ticks() - timer >= 1000:
+            s_cooldown1 = True
+            self.rect.x = self.rect.x + s_xMovement
+
+        
+cooldown1 = True
+yMovement = 3
+xMovement = 5           
+        
+        
+
 
 
 playerX = 250
@@ -70,6 +84,8 @@ bullet_speed = 5
 invaderX = 1
 invaderY = 1
 cooldownOn = True
+
+count = 1
 
 
 
@@ -124,7 +140,7 @@ while not done:
 
     playerGroup.update(player_speed)
     bulletGroup.update(bullet_speed)
-    invaderGroup.update(invader_speed)
+    invaderGroup.update(cooldown1, yMovement, xMovement)
 
     screen.fill(BLACK)
     playerGroup.draw(screen)
