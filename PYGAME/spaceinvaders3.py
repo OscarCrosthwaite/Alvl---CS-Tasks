@@ -12,9 +12,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (125, 125, 255)
-
 # setting up game basics
-size = (500, 500)
+size = (528, 528)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("SPACE INVADERS!")
 done = False
@@ -44,7 +43,7 @@ class bullets(pygame.sprite.Sprite):
     def __init__(self, s_width, s_length, s_playerX, s_playerY):
         super().__init__()
         self.image = pygame.Surface([s_width, s_length])
-        self.image.fill(RED)
+        self.image.fill(WHITE)
         self.rect=self.image.get_rect()
         self.rect.x = s_playerX
         self.rect.y = s_playerY 
@@ -60,7 +59,7 @@ class invaders(pygame.sprite.Sprite):
         self.rect.x = 10 * s_invaderX
         self.rect.y = -10 * s_invaderY
         self.xMovement = 5
-        self.yMovement = 10
+        self.yMovement = 20
 
 
     def x_update(self):
@@ -71,10 +70,10 @@ class invaders(pygame.sprite.Sprite):
     
 
 
-playerX = 250
-playerY = 375
+playerX = size[0]-size[0]/2
+playerY = size[1]-size[1]/3
 invader_speed = 1
-bullet_speed = 5
+bullet_speed = 25
 invaderX = 550
 invaderY = 0
 cooldownOn = True
@@ -94,7 +93,7 @@ bulletGroup = pygame.sprite.Group()
 
 
 invaderGroup = pygame.sprite.Group()
-invaderNumber = 7
+invaderNumber = 10
 for j in range(0, 3):
     invaderY = j * 6
     for i in range(0, invaderNumber):
@@ -116,16 +115,20 @@ while not done:
         if keys[pygame.K_d]:
             player_speed = 3
         if keys[pygame.K_w]:
+            if keys[pygame.K_;]:
             # bullet firing
-            if cooldownOn == True:
+            while True:
+                z = random.randint(0, 1)
+                break
+            if cooldownOn == True and z == 1:
+
                 playerX = playerCharacter.coordUpdate()
-                bullet = bullets(10, 10, playerX, playerY)
+                bullet = bullets(60, 60, playerX, playerY)
                 bulletGroup.add(bullet)
-                cooldownOn = False
+                cooldownOn = True
                 bulletCooldown = pygame.time.get_ticks()
             if pygame.time.get_ticks() - bulletCooldown >= 1000:
                 cooldownOn = True
-
 
     # bullet collision
     for bullet in bulletGroup:
