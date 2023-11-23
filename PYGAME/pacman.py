@@ -28,20 +28,20 @@ class pacman(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = 500
         self.rect.y = 500
-    def pDown(self):
-        self.rect.y = self.rect.y - pMovement
-    def pUp(self):
-        self.rect.y = self.rect.y + pMovement
-    def pRight(self):
-        self.rect.x = self.rect.x + pMovement
-    def pLeft(self):
-        self.rect.y = self.rect.y - pMovement
+    def update(self, s_hpMove, s_vpMove):
+        self.rect.x = self.rect.x + s_hpMove
+        self.rect.y = self.rect.y + s_vpMove
+
+
         
     
 
 
 #variables
-pMovement = 5
+
+hpMove = 0
+vpMove = 0
+
 
 #sprite groups
 pacmanGroup = pygame.sprite.Group()
@@ -59,21 +59,27 @@ while not done:
             done = True
         #key inputs
         keys = pygame.key.get_pressed()
+        hpMove = 0
+        vpMove = 0
         if keys[pygame.K_a]:
-            pacmanGroup.pLeft()
+            hpMove = -5
         if keys[pygame.K_d]:
-            pacmanGroup.pRight()
+            hpMove = 5
         if keys[pygame.K_s]:
-            pacmanGroup.pDown()
+            vpMove = 5
         if keys[pygame.K_w]:
-            pacmanGroup.pUp()
+            vpMove = -5
+
+            
 
     
     #coding code
 
+    pacmanGroup.update(hpMove, vpMove)
 
     #drawing code
     screen.fill(BLACK)
+    pacmanGroup.draw(screen)
 
 
 
