@@ -31,6 +31,19 @@ class pacman(pygame.sprite.Sprite):
     def update(self, s_hpMove, s_vpMove):
         self.rect.x = self.rect.x + s_hpMove
         self.rect.y = self.rect.y + s_vpMove
+    def collision(self, s_hpMove, s_vpMove):
+        self.rect.x = self.rect.x - s_hpMove
+        self.rect.x = self.rect.x - s_vpMove
+
+class wall(pygame.sprite.Sprite):
+    def __init__(self, wWidth, wLength, wXCoord, wYCoord):
+        super().__init__()
+        self.image = pygame.Surface([wWidth, wLength])
+        self.image.fill(BLUE)
+        self.rect=self.image.get_rect()
+        self.rect.x = wXCoord
+        self.rect.y = wYCoord
+
 
 
         
@@ -39,14 +52,49 @@ class pacman(pygame.sprite.Sprite):
 
 #variables
 
+#pacman move speed
 hpMove = 0
 vpMove = 0
 
 
 #sprite groups
+#pacman group
 pacmanGroup = pygame.sprite.Group()
 pacmanTemp = pacman(25, 25)
 pacmanGroup.add(pacmanTemp)
+
+#wall group
+wallGroup = pygame.sprite.Group()
+
+#creates top wall
+for i in range(0, 1000):
+    if i % 50 == 0:
+        wallTemp = wall(50, 50, i, 0)
+        wallGroup.add(wallTemp)
+#creats bottom wall
+for i in range(0, 1000):
+    if i % 50 == 0:
+        wallTemp = wall(50, 50, i, 950)
+        wallGroup.add(wallTemp)
+#creates left wall
+for i in range(0, 1000):
+    if i % 50 == 0:
+        #creates holes in wall
+        if i != 450:
+            if i != 500:
+                if i != 550:
+                    wallTemp = wall(50, 50, 0, i)
+                    wallGroup.add(wallTemp)
+#creates right wall
+for i in range(0, 1000):
+    if i % 50 == 0:
+        #creates holes in wall
+        if i != 450:
+            if i != 500:
+                if i != 550:
+                    wallTemp = wall(50, 50, 950, i)
+                    wallGroup.add(wallTemp)
+
 
 
 #game loop
@@ -75,14 +123,24 @@ while not done:
     
     #coding code
 
-    pacmanGroup.update(hpMove, vpMove)
+    #sprite collision
+    for wallTemp in wallGroup:
+        wallObstructList = pygame.sprite.spritecollide(wallTemp, wallGroup, True)
+        for pacmanTemp in wallObstructList:
+            pacmanGroup.collision(hpMove, vpMove)
+    
+            
 
+    #update functions
+    pacmanGroup.update(hpMove, vpMove)
+    pacmanGroup.collision(hpMove, vpMove)
     #drawing code
     screen.fill(BLACK)
     pacmanGroup.draw(screen)
+    wallGroup.draw(screen)
 
 
 
     #completes game loop
     pygame.display.flip()
-    clock.tick(25)
+    clock.tick(60)
