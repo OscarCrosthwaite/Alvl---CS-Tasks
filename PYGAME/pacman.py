@@ -45,7 +45,6 @@ class wall(pygame.sprite.Sprite):
         self.rect.y = wYCoord
 
 
-
         
     
 
@@ -55,6 +54,10 @@ class wall(pygame.sprite.Sprite):
 #pacman move speed
 hpMove = 0
 vpMove = 0
+
+#map coords
+mapX = 0
+mapY = 0
 
 
 #sprite groups
@@ -66,34 +69,40 @@ pacmanGroup.add(pacmanTemp)
 #wall group
 wallGroup = pygame.sprite.Group()
 
-#creates top wall
-for i in range(0, 1000):
-    if i % 50 == 0:
-        wallTemp = wall(50, 50, i, 0)
-        wallGroup.add(wallTemp)
-#creats bottom wall
-for i in range(0, 1000):
-    if i % 50 == 0:
-        wallTemp = wall(50, 50, i, 950)
-        wallGroup.add(wallTemp)
-#creates left wall
-for i in range(0, 1000):
-    if i % 50 == 0:
-        #creates holes in wall
-        if i != 450:
-            if i != 500:
-                if i != 550:
-                    wallTemp = wall(50, 50, 0, i)
-                    wallGroup.add(wallTemp)
-#creates right wall
-for i in range(0, 1000):
-    if i % 50 == 0:
-        #creates holes in wall
-        if i != 450:
-            if i != 500:
-                if i != 550:
-                    wallTemp = wall(50, 50, 950, i)
-                    wallGroup.add(wallTemp)
+
+
+#plans walls
+map = [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], #1
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #2
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #3
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #4
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #5
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #6
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #7
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #8
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #9
+    	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #10
+	    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #11
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #12
+    	[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #13
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #14
+    	[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #15
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #16
+    	[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #17
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #18
+	    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #19
+	    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] ]
+
+#draws walls
+for i in map:
+
+    for j in i:
+        if j == 1:
+            wallTemp = wall(50, 50, mapX, mapY)
+            wallGroup.add(wallTemp)
+        mapX = mapX + 50
+    mapX = 0
+    mapY = mapY + 50
 
 
 
@@ -124,16 +133,24 @@ while not done:
     #coding code
 
     #sprite collision
+    #pacman collision with wall
     for wallTemp in wallGroup:
-        wallObstructList = pygame.sprite.spritecollide(wallTemp, wallGroup, True)
+        wallObstructList = pygame.sprite.spritecollide(wallTemp, pacmanGroup, False)
         for pacmanTemp in wallObstructList:
-            pacmanGroup.collision(hpMove, vpMove)
+            if pacmanTemp.rect.colliderect(wallTemp.rect):
+                hpMove = 
+                vpMove = 
+                pacmanGroup.update(hpMove, vpMove)
+            
+                
+            
     
             
 
     #update functions
     pacmanGroup.update(hpMove, vpMove)
-    pacmanGroup.collision(hpMove, vpMove)
+    
+
     #drawing code
     screen.fill(BLACK)
     pacmanGroup.draw(screen)
