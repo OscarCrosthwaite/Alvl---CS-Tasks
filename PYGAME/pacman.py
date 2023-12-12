@@ -31,9 +31,11 @@ class pacman(pygame.sprite.Sprite):
     def update(self, s_hpMove, s_vpMove):
         self.rect.x = self.rect.x + s_hpMove
         self.rect.y = self.rect.y + s_vpMove
-    def collision(self, s_hpMove, s_vpMove):
-        self.rect.x = self.rect.x - s_hpMove
-        self.rect.x = self.rect.x - s_vpMove
+    def collision(self, s_hpMove2, s_vpMove2):
+        self.rect.x = self.rect.x - s_hpMove2
+        self.rect.y = self.rect.y - s_vpMove2
+        
+        
 
 class wall(pygame.sprite.Sprite):
     def __init__(self, wWidth, wLength, wXCoord, wYCoord):
@@ -43,6 +45,11 @@ class wall(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = wXCoord
         self.rect.y = wYCoord
+    
+    def getWallX(self):
+        return self.rect.x
+    def getWallY(self):
+        return self.rect.y
 
 
         
@@ -55,10 +62,15 @@ class wall(pygame.sprite.Sprite):
 hpMove = 0
 vpMove = 0
 
+hpMove2 = 0
+vpMove2 = 0
+
 #map coords
 mapX = 0
 mapY = 0
 
+#move validator
+allowMove = True
 
 #sprite groups
 #pacman group
@@ -118,14 +130,20 @@ while not done:
         keys = pygame.key.get_pressed()
         hpMove = 0
         vpMove = 0
+
+
         if keys[pygame.K_a]:
             hpMove = -5
+            hpMove2 = -5
         if keys[pygame.K_d]:
             hpMove = 5
+            hpMove2 = 5
         if keys[pygame.K_s]:
             vpMove = 5
+            vpMove2 = 5
         if keys[pygame.K_w]:
             vpMove = -5
+            vpMove2 = -5
 
             
 
@@ -138,9 +156,8 @@ while not done:
         wallObstructList = pygame.sprite.spritecollide(wallTemp, pacmanGroup, False)
         for pacmanTemp in wallObstructList:
             if pacmanTemp.rect.colliderect(wallTemp.rect):
-                hpMove = 
-                vpMove = 
-                pacmanGroup.update(hpMove, vpMove)
+                pacmanTemp.collision(hpMove2, vpMove2)
+                
             
                 
             
