@@ -3,14 +3,15 @@ def binarySearch(aList, itemSought):
 		index = -1
 		first = 0
 		last = len(aList)-1
-		while first <= last and found ==
+		while first <= last and found == False:
 			midpoint = (first + last) / 2
 			if aList[midpoint] == itemSought:
-				found =
-
+				found = True
+				index = midpoint
 			else:	
 				if aList[midpoint] < itemSought:
-					first = 
+					first = midpoint + 1
 				else:
-					print()
+					last = midpoint - 1
 		return index
+#

@@ -28,12 +28,15 @@ class pacman(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = 500
         self.rect.y = 500
+        self.x2coord = self.rect.x
+        self.y2coord = self.rect.y
     def update(self, s_hpMove, s_vpMove):
         self.rect.x = self.rect.x + s_hpMove
         self.rect.y = self.rect.y + s_vpMove
-    def collision(self, s_hpMove2, s_vpMove2):
-        self.rect.x = self.rect.x - s_hpMove2
-        self.rect.y = self.rect.y - s_vpMove2
+    def collision(self, s_hpMove, s_vpMove):
+        self.rect.x -= s_hpMove * 10
+        self.rect.y -= s_vpMove * 10
+
         
         
 
@@ -156,7 +159,9 @@ while not done:
         wallObstructList = pygame.sprite.spritecollide(wallTemp, pacmanGroup, False)
         for pacmanTemp in wallObstructList:
             if pacmanTemp.rect.colliderect(wallTemp.rect):
-                pacmanTemp.collision(hpMove2, vpMove2)
+                pacmanTemp.rect.x = wallTemp.rect.x
+                pacmanTemp.rect.y = wallTemp.rect.y
+                pacmanTemp.collision(5, 5)
                 
             
                 
