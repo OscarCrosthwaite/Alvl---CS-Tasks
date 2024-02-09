@@ -26,15 +26,24 @@ list1 = ["A", "F", "G", "B", "E", "C", "H", "D"]
 
 quickPass(list1)
 
-def quickSplit(arr, ptr, pivot):
-    direction = 1
-    while ptr != pivot:
-        if ((direction == 1 and arr[ptr] > arr[pivot]) or 
-            (direction == -1 and arr[ptr] < arr[pivot])):
-            swap(arr, ptr, pivot)
-            ptr, pivot = pivot, ptr
-            direction = direction * -1
-        #endif
-        ptr += direction
-    #endwhile
-    return pivot
+def quickSplit(arr, ptr, pivot): 
+    direction = 1 
+    while ptr != pivot: 
+        if ((direction == 1 and arr[ptr] > arr[pivot]) or  
+            (direction == -1 and arr[ptr] < arr[pivot])): 
+            swap(arr, ptr, pivot) 
+            ptr, pivot = pivot, ptr 
+            direction = direction * -1 
+        #endif 
+        ptr += direction 
+    #endwhile 
+    return pivot 
+
+def quickSort(arr, left, right): 
+    if left >= right: 
+        pass 
+    else: 
+        pivotPos = quickSplit(arr, left, right) 
+        quickSort(arr, left, pivotPos - 1) 
+        quickSort(arr, pivotPos + 1, right) 
+    
