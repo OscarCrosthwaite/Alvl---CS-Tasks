@@ -3,12 +3,13 @@ pygame.init()
 pygame.font.init()
 
 # colours
-BLACK = ( 0, 0, 0)
-WHITE = ( 255, 255, 255)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (125, 125, 255)
+BROWN = (150, 75, 0)
 
 # screen
 size = (1000, 1000)
@@ -20,22 +21,36 @@ def openSettings(X, Y):
     # sets font and text size
     font = pygame.font.SysFont('arial', 32)
     # sets text to write
-    text = font.render(str("temp"), True, WHITE)
+    text = font.render(str("temp"), True, RED)
     # creates drawable object containing text
     textRect = text.get_rect()
     # centers object
     textRect.center = (X // 2, Y // 2)
-    # displays text until ESCAPE is pressed
+    # displays text
     while closeSettings == False:
+        #registers keys
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                #closes settings when BACKSPACE pressed
+                if event.key == pygame.K_BACKSPACE:
+                    closeSettings = True
+                # add more settings at a later date
+                # volume, accessiblity (difficulty, etc.)
+                # a way to quit the program
+        # draws settings menu
+        screen.fill(WHITE)
         screen.blit(text, textRect)
-        if event.key == pygame.K_BACKSPACE:
-            closeSettings == True
+        pygame.display.flip()
+
+    
 
         
 
 
 
 # classes 
+# all enemies need to be in the same class - use subclasses    
+
 class player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -67,6 +82,17 @@ class player(pygame.sprite.Sprite):
         self.rect.x += self.xMovement
         self.rect.y += self.yMovement
 
+class tile(pygame.sprite.Sprite):
+    def __init__(self, mapX, mapY):
+        super().__init__()
+        self.image = pygame.Surface([100, 100])
+        self.image.fill(BROWN)
+        self.rect=self.image.get_rect()
+        self.rect.x = mapX
+        self.rect.y = mapY
+#class baseEnemy(self, ):
+    
+        
         
         
 
@@ -77,31 +103,36 @@ class player(pygame.sprite.Sprite):
 # sprite groups
 playerGroup = pygame.sprite.Group()
 playerTemp = player()
-playerGroup.add(playerTemp)       
+playerGroup.add(playerTemp)
+
+tileGroup = pygame.sprite.Group()
 
 # maps
-worldMap = []#fill with zeros, determine map size later]
+worldMap = [] # fill with zeros, determine map size later
 
-mapTemp =  [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+map1 =  [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
+            [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
 
-# draws map - temp
-#for i in corresponding map:
-    #for j in i:
-        #if j == number that corresponds to object class:
-            #adds map object
-        #x-coordinate increase by 100
-    #resets x-coordinate 
-    #y-coordinate increase by 100
-    
+# draws mapTemp
+mapX = 0
+mapY = 0
+for i in map1:
+    for j in i:
+        if j == 1:
+            tileTemp = tile(mapX, mapY)
+            tileGroup.add(tileTemp)
+        mapX += 100
+    mapY += 100
+    mapX = 0
+
         
     
 
@@ -124,11 +155,12 @@ while not done:
         elif event.type == pygame.KEYDOWN:
             # quit application
             if event.key == pygame.K_ESCAPE:
-                openSettings(1000, 1000)
-                #done = True
+                openSettings(1000, 1000)                       
+                
+
             # player movement
             tempMovement = event.key
-            print(tempMovement)
+            #print(tempMovement)
             playerTemp.movement(tempMovement)
 
 
@@ -146,6 +178,7 @@ while not done:
 
     # drawing code
     screen.fill(BLACK)
+    tileGroup.draw(screen)
 
     # create sprite groups
     playerGroup.draw(screen)
