@@ -52,35 +52,62 @@ def openSettings(X, Y):
 # all enemies need to be in the same class - use subclasses    
 
 class player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, mapX, mapY):
         super().__init__()
         self.image = pygame.Surface([100, 100])
         # player colour
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         # sets player shape
-        self.rect.x = 100
-        self.rect.y = 100
+        self.rect.x = mapX
+        self.rect.y = mapY
         # player starts standing still
         self.xMovement = 0
         self.yMovement = 0
     # player movement direction
-    def movement(self, input):
+    def movement(self, input, map):
         # resets movement every frame
         self.xMovement = 0
         self.yMovement = 0
         # sets player direction - uses ASCII
-        if input == 97:
-            self.xMovement = -100
-        if input == 115:
-            self.yMovement = 100   
-        if input == 100:
-            self.xMovement = 100
-        if input == 119:
-            self.yMovement = -100 
+        if input == 97: #a
+            if map[playerMapX - 1][playerMapY] in traversableTiles:
+                self.xMovement = -100
+        if input == 115: #s
+            if map[playerMapX][playerMapY - 1] in traversableTiles:
+                self.yMovement = 100   
+        if input == 100: #d
+            if map[playerMapX + 1][playerMapY] in traversableTiles:
+                self.xMovement = 100
+        if input == 119: #w
+            if map[playerMapX][playerMapY + 1] in traversableTiles:
+                self.yMovement = -100 
         # moves player
         self.rect.x += self.xMovement
         self.rect.y += self.yMovement
+    def mapCoordUpdate(self, playerMapX, playerMapY, map):
+        #updates player's coordinates on map
+        # left
+        if self.xMovement == -100:
+            if map[playerMapX - 1][playerMapY] in traversableTiles:
+                playerMapX -= 1
+                return playerMapX
+        # down
+        if self.yMovement == -100:
+            if map[playerMapX][playerMapY + 1] in traversableTiles:
+                playerMapY += 1
+                return playerMapY
+        # right
+        if self.xMovement == 100:
+            if map[playerMapX + 1][playerMapY] in traversableTiles:
+                playerMapX += 1
+                return playerMapX
+        # up
+        if self.yMovement == 100:
+            if map[playerMapX][playerMapY - 1] in traversableTiles:
+                playerMapY -= 1
+                return playerMapY
+
 
 class tile(pygame.sprite.Sprite):
     def __init__(self, mapX, mapY):
@@ -102,20 +129,27 @@ class tile(pygame.sprite.Sprite):
 
 # sprite groups
 playerGroup = pygame.sprite.Group()
-playerTemp = player()
-playerGroup.add(playerTemp)
 
 tileGroup = pygame.sprite.Group()
 
 # maps
 worldMap = [] # fill with zeros, determine map size later
 
-map1 =  [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+
+# coordinates of player on regular map
+playerMapX = 5
+playerMapY = 5
+# list of symbols that correspond to tiles that the player can travel through
+traversableTiles = [0, 2]
+# list of symbols that correspond to tiles that the player cannot travel through
+nonTraversableTiles = [1]
+
+map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
             [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, "P", 0, 0, 0, 0, 0],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
@@ -129,6 +163,10 @@ for i in map1:
         if j == 1:
             tileTemp = tile(mapX, mapY)
             tileGroup.add(tileTemp)
+        if j == "P":
+            playerTemp = player(mapX, mapY)
+            playerGroup.add(playerTemp)
+        #if j == :  etc.
         mapX += 100
     mapY += 100
     mapX = 0
@@ -160,8 +198,8 @@ while not done:
 
             # player movement
             tempMovement = event.key
-            #print(tempMovement)
-            playerTemp.movement(tempMovement)
+            playerTemp.movement(tempMovement, map1)
+            playerTemp.mapCoordUpdate(playerMapX, playerMapY, map1)
 
 
 
