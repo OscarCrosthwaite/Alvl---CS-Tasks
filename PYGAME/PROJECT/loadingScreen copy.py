@@ -2,7 +2,6 @@ import pygame, sys, time, random, math
 pygame.init()
 pygame.font.init()
 
-
 # colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -11,7 +10,6 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (125, 125, 255)
 BROWN = (150, 75, 0)
-
 
 # screen
 size = (1000, 1000)
@@ -47,6 +45,9 @@ def openSettings(X, Y):
     
 
         
+
+
+
 # classes 
 # all enemies need to be in the same class - use subclasses    
 
@@ -70,16 +71,16 @@ class player(pygame.sprite.Sprite):
         self.yMovement = 0
         # sets player direction - uses ASCII
         if input == 97: #a
-            if map[playerMapX - 1][playerMapY] in traversableTiles:
+            if map[playerMapY][playerMapX - 1] in traversableTiles:
                 self.xMovement = -100
         if input == 115: #s
-            if map[playerMapX][playerMapY + 1] in traversableTiles:
+            if map[playerMapY + 1][playerMapX] in traversableTiles:
                 self.yMovement = 100   
         if input == 100: #d
-            if map[playerMapX + 1][playerMapY] in traversableTiles:
+            if map[playerMapY][playerMapX + 1] in traversableTiles:
                 self.xMovement = 100
         if input == 119: #w
-            if map[playerMapX][playerMapY - 1] in traversableTiles:
+            if map[playerMapY - 1][playerMapX] in traversableTiles:
                 self.yMovement = -100 
         # moves player
         self.rect.x += self.xMovement
@@ -88,22 +89,22 @@ class player(pygame.sprite.Sprite):
         #updates player's coordinates on map
         # left
         if self.xMovement == -100:
-            if map[playerMapX - 1][playerMapY] in traversableTiles:
+            if map[playerMapY][playerMapX - 1] in traversableTiles:
                 playerMapX -= 1
                 return playerMapX
         # down
         if self.yMovement == -100:
-            if map[playerMapX][playerMapY + 1] in traversableTiles:
+            if map[playerMapY + 1][playerMapX] in traversableTiles:
                 playerMapY += 1
                 return playerMapY
         # right
         if self.xMovement == 100:
-            if map[playerMapX + 1][playerMapY] in traversableTiles:
+            if map[playerMapY][playerMapX + 1] in traversableTiles:
                 playerMapX += 1
                 return playerMapX
         # up
         if self.yMovement == 100:
-            if map[playerMapX][playerMapY - 1] in traversableTiles:
+            if map[playerMapY - 1][playerMapX] in traversableTiles:
                 playerMapY -= 1
                 return playerMapY
 
@@ -139,7 +140,7 @@ worldMap = [] # fill with zeros, determine map size later
 playerMapX = 5
 playerMapY = 5
 # list of symbols that correspond to tiles that the player can travel through
-traversableTiles = [0, 2]
+traversableTiles = [0, 2, "P"]
 # list of symbols that correspond to tiles that the player cannot travel through
 nonTraversableTiles = [1]
 
