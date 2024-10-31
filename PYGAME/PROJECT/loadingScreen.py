@@ -91,7 +91,7 @@ class player(pygame.sprite.Sprite):
             if map[playerMapX - 1][playerMapY] in traversableTiles:
                 playerMapX -= 1
                 return playerMapX
-        # down
+        # up
         if self.yMovement == -100:
             if map[playerMapX][playerMapY + 1] in traversableTiles:
                 playerMapY += 1
@@ -101,7 +101,7 @@ class player(pygame.sprite.Sprite):
             if map[playerMapX + 1][playerMapY] in traversableTiles:
                 playerMapX += 1
                 return playerMapX
-        # up
+        # down
         if self.yMovement == 100:
             if map[playerMapX][playerMapY - 1] in traversableTiles:
                 playerMapY -= 1
