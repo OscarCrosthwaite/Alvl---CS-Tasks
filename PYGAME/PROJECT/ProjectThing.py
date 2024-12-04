@@ -66,36 +66,45 @@ class player(pygame.sprite.Sprite):
         self.yMove = 0
     # player movement direction
     def movement(self, input, map, mapY, mapX):
-        self.xMove = 0
-        self.yMove = 0
+        # Calculate movement direction
+        newX, newY = mapX, mapY
+        if input == 97:  # 'a'
+            if mapX - 1 == 0:
+                print("placeholder")
+            else:
+                if map[mapY][mapX - 1] in traversableTiles:
+                    self.xMove = -100
+                    newX -= 1
+        elif input == 115:  # 's'
+            if mapY + 1 == len(map):
+                print("placeholder")
+            else:
+                if map[mapY + 1][mapX] in traversableTiles:
+                    self.yMove = 100
+                    newY += 1
+        elif input == 100:  # 'd'
+            if mapX + 1 == len(map[mapY]):
+                print("placeholder")
+            else:
+                if map[mapY][mapX + 1] in traversableTiles:
+                    self.xMove = 100
+                    newX += 1
+        elif input == 119:  # 'w'
+            if mapY - 1 == 0:
+                print("placeholder")
+            else:
+                if map[mapY - 1][mapX] in traversableTiles:
+                    self.yMove = -100
+                    newY -= 1
         
-        if input == 97: #a
-            if map[mapY][mapX - 1] in traversableTiles:
-                self.xMove = -100
-                mapX -= 1
-        elif input == 115: #s
-            if map[mapY + 1][mapX] in traversableTiles:
-                self.yMove = 100
-                mapY += 1
-
-        elif input == 100: #d
-            if map[mapY][mapX + 1] in traversableTiles:
-                self.xMove = 100
-                mapX += 1
-                # return mapX
-        elif input == 119: #w
-            if map[mapY - 1][mapX] in traversableTiles:
-                self.yMove = -100
-                mapY -= 1
-                # return mapY
-
         self.rect.x += self.xMove
         self.rect.y += self.yMove
 
-        if self.yMove == 0:
-            return mapX
-        elif self.xMove == 0: 
-            return mapY
+        # Reset movement deltas
+        self.xMove = 0
+        self.yMove = 0
+
+        return newX, newY
 
 
 
@@ -221,8 +230,7 @@ while not done:
                 
 
             # player movement
-            tempMove = event.key
-            PLAYER.movement(tempMove, map1, playerMapX, playerMapY)
+            playerMapX, playerMapY = PLAYER.movement(event.key, map1, playerMapY, playerMapX)
 
 
 
@@ -230,8 +238,6 @@ while not done:
             
         
             
-        print()
-    print() 
     # coding code
     
     # update objects
@@ -240,8 +246,6 @@ while not done:
     # drawing code
     screen.fill(BLACK)
     tileGroup.draw(screen)
-
-    # create sprite groups
     playerGroup.draw(screen)
 
     # end of game loop

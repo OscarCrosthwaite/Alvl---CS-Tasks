@@ -2,7 +2,6 @@ import pygame, sys, time, random, math
 pygame.init()
 pygame.font.init()
 
-
 # colours
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -11,7 +10,6 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (125, 125, 255)
 BROWN = (150, 75, 0)
-
 
 # screen
 size = (1000, 1000)
@@ -47,76 +45,112 @@ def openSettings(X, Y):
     
 
         
+
+
+
 # classes 
 # all enemies need to be in the same class - use subclasses    
 
 class player(pygame.sprite.Sprite):
-    def __init__(self, mapX, mapY):
+    def __init__(self, X, Y):
         super().__init__()
         self.image = pygame.Surface([100, 100])
         # player colour
-        self.image.fill(RED)
+        self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         # sets player shape
-        self.rect.x = mapX
-        self.rect.y = mapY
+        self.rect.x = X
+        self.rect.y = Y
         # player starts standing still
-        self.xMovement = 0
-        self.yMovement = 0
+        self.xMove = 0
+        self.yMove = 0
     # player movement direction
-    def movement(self, input, map):
-        # resets movement every frame
-        self.xMovement = 0
-        self.yMovement = 0
-        # sets player direction - uses ASCII
-        if input == 97: #a
-            if map[playerMapX - 1][playerMapY] in traversableTiles:
-                self.xMovement = -100
-        if input == 115: #s
-            if map[playerMapX][playerMapY + 1] in traversableTiles:
-                self.yMovement = 100   
-        if input == 100: #d
-            if map[playerMapX + 1][playerMapY] in traversableTiles:
-                self.xMovement = 100
-        if input == 119: #w
-            if map[playerMapX][playerMapY - 1] in traversableTiles:
-                self.yMovement = -100 
-        # moves player
-        self.rect.x += self.xMovement
-        self.rect.y += self.yMovement
-    def mapCoordUpdate(self, playerMapX, playerMapY, map):
-        #updates player's coordinates on map
-        # left
-        if self.xMovement == -100:
-            if map[playerMapX - 1][playerMapY] in traversableTiles:
-                playerMapX -= 1
-                return playerMapX
-        # up
-        if self.yMovement == -100:
-            if map[playerMapX][playerMapY + 1] in traversableTiles:
-                playerMapY += 1
-                return playerMapY
-        # right
-        if self.xMovement == 100:
-            if map[playerMapX + 1][playerMapY] in traversableTiles:
-                playerMapX += 1
-                return playerMapX
-        # down
-        if self.yMovement == 100:
-            if map[playerMapX][playerMapY - 1] in traversableTiles:
-                playerMapY -= 1
-                return playerMapY
+    def movement(self, input, map, mapY, mapX):
+        # Calculate movement direction
+        newX, newY = mapX, mapY
+        if input == 97:  # 'a'
+            if mapX == 0:
+                print("placeholder")
+            else:
+                if map[mapY][mapX - 1] in traversableTiles:
+                    self.xMove = -100
+                    newX -= 1
+        elif input == 115:  # 's'
+            if mapY + 1 == len(map):
+                print("placeholder")
+            else:
+                if map[mapY + 1][mapX] in traversableTiles:
+                    self.yMove = 100
+                    newY += 1
+        elif input == 100:  # 'd'
+            if mapX + 1 == len(map[mapY]):
+                print("placeholder")
+            else:
+                if map[mapY][mapX + 1] in traversableTiles:
+                    self.xMove = 100
+                    newX += 1
+        elif input == 119:  # 'w'
+            if mapY == 0:
+                print("placeholder")
+            else:
+                if map[mapY - 1][mapX] in traversableTiles:
+                    self.yMove = -100
+                    newY -= 1
+        
+        self.rect.x += self.xMove
+        self.rect.y += self.yMove
+
+        # Reset movement deltas
+        self.xMove = 0
+        self.yMove = 0
+
+        return newX, newY
+
 
 
 class tile(pygame.sprite.Sprite):
-    def __init__(self, mapX, mapY):
+    def __init__(self, XCoord, YCoord):
         super().__init__()
         self.image = pygame.Surface([100, 100])
         self.image.fill(BROWN)
         self.rect=self.image.get_rect()
-        self.rect.x = mapX
-        self.rect.y = mapY
-#class baseEnemy(self, ):
+        self.rect.x = XCoord
+        self.rect.y = YCoord
+#class enemy(pygame.sprite.Sprite):
+    #def __init__(self, XCoord, YCoord, hitpoints):
+        #super().__init__()
+        #self.image = pygame.Surface([100, 100])
+        #self.image.fill(RED)
+        #self.rect=self.image.get_rect()
+        #self.rect.x = XCoord
+        #self.rect.y = YCoord
+        #self.hitpoints = hitpoints
+    #def idle(self, )
+    #def chase(self, )
+    #def hurt(self, )
+    #def die(self, )
+    #def attack(self, ) - POLYMORPHISM
+
+#class item(pygame.sprite.Sprite):
+    #def __init__(self, XCoord, YCoord):
+        #super().__init__()
+        #self.image = pygame.Surface([100, 100])
+        #self.image.fill(WHITE)
+        #self.rect=self.image.get_rect()
+        #self.rect.x = XCoord
+        #self.rect.y = YCoord
+    #def interacted(self, ):
+
+#class template(pygame.sprite.Sprite):
+    #def __init__(self, XCoord, YCoord):
+        #super().__init__()
+        #self.image = pygame.Surface([100, 100])
+        #self.image.fill(WHITE)
+        #self.rect=self.image.get_rect()
+        #self.rect.x = XCoord
+        #self.rect.y = YCoord
+    
+
     
         
         
@@ -135,11 +169,11 @@ tileGroup = pygame.sprite.Group()
 worldMap = [] # fill with zeros, determine map size later
 
 
-# coordinates of player on regular map
+# starting coordinates of player
 playerMapX = 5
 playerMapY = 5
 # list of symbols that correspond to tiles that the player can travel through
-traversableTiles = [0, 2]
+traversableTiles = [0, 2, "P"]
 # list of symbols that correspond to tiles that the player cannot travel through
 nonTraversableTiles = [1]
 
@@ -148,27 +182,27 @@ map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, "P", 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, "P", 0, 0, 0, 0],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
 
 # draws mapTemp
-mapX = 0
-mapY = 0
+tileXCoord = 0
+tileYCoord = 0
 for i in map1:
     for j in i:
         if j == 1:
-            tileTemp = tile(mapX, mapY)
+            tileTemp = tile(tileXCoord, tileYCoord)
             tileGroup.add(tileTemp)
         if j == "P":
-            playerTemp = player(mapX, mapY)
-            playerGroup.add(playerTemp)
+            PLAYER = player(tileXCoord, tileYCoord)
+            playerGroup.add(PLAYER)
         #if j == :  etc.
-        mapX += 100
-    mapY += 100
-    mapX = 0
+        tileXCoord += 100
+    tileYCoord += 100
+    tileXCoord = 0
 
         
     
@@ -196,9 +230,7 @@ while not done:
                 
 
             # player movement
-            tempMovement = event.key
-            playerTemp.movement(tempMovement, map1)
-            playerTemp.mapCoordUpdate(playerMapX, playerMapY, map1)
+            playerMapX, playerMapY = PLAYER.movement(event.key, map1, playerMapY, playerMapX)
 
 
 
@@ -206,8 +238,6 @@ while not done:
             
         
             
-        print()
-    print() 
     # coding code
     
     # update objects
@@ -216,8 +246,6 @@ while not done:
     # drawing code
     screen.fill(BLACK)
     tileGroup.draw(screen)
-
-    # create sprite groups
     playerGroup.draw(screen)
 
     # end of game loop
