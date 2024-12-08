@@ -69,7 +69,7 @@ class player(pygame.sprite.Sprite):
         # Calculate movement direction
         newX, newY = mapX, mapY
         if input == 97:  # 'a'
-            if mapX - 1 == 0:
+            if mapX == 0:
                 print("placeholder")
             else:
                 if map[mapY][mapX - 1] in traversableTiles:
@@ -90,7 +90,7 @@ class player(pygame.sprite.Sprite):
                     self.xMove = 100
                     newX += 1
         elif input == 119:  # 'w'
-            if mapY - 1 == 0:
+            if mapY == 0:
                 print("placeholder")
             else:
                 if map[mapY - 1][mapX] in traversableTiles:
@@ -177,12 +177,17 @@ traversableTiles = [0, 2, "P"]
 # list of symbols that correspond to tiles that the player cannot travel through
 nonTraversableTiles = [1]
 
+def createObject(XCoord, YCoord, group, _class):
+    temp = _class(XCoord, YCoord)
+    group.add(temp)
+
+
 map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
             [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, "P", 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, "P", 0, 0, 0, 0],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
