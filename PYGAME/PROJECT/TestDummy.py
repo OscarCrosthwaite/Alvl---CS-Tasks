@@ -17,16 +17,20 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("LEGEND OF THE LAND")
 # start screen
 def startMenu(X, Y):
-    menuImage = pygame.image.load("")
+    # menu image code
+    menuImage = pygame.image.load("PYGAME/tempStartMenu.png")
+    menuImage = pygame.transform.scale(menuImage, (X, Y))
     closeStartMenu = False
-    # put image code here
     while closeStartMenu == False:
-        print("placeholder")
-
-
-
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.type == pygame.K_ESCAPE:
+                    closeStartMenu == True
+                # can add save files at a later date, potentially
+        screen.blit(menuImage, (0, 0))
+        pygame.display.flip()
 # settings screen
-def openSettings(X, Y):
+def openSettings(X, Y, closeProgram):
     closeSettings = False
     font = pygame.font.SysFont('arial', 32)
     text = font.render(str("temp"), True, RED)
@@ -34,22 +38,23 @@ def openSettings(X, Y):
     textRect.center = (X // 2, Y // 2)
     # displays text
     while closeSettings == False:
-        #registers keys
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                #closes settings when BACKSPACE pressed
-                if event.key == pygame.K_BACKSPACE:
-                    closeSettings = True
+                # if event.key == pygame.K_BACKSPACE:
+                #    closeSettings = True
                 # add more settings at a later date
                 # volume, accessiblity (difficulty, etc.)
                 # a way to quit the program
                 if event.key == pygame.K_ESCAPE:
                     closeSettings = True
+                if event.key == pygame.K_BACKSPACE:
+                    closeProgram = True
         # draws settings menu
         screen.fill(WHITE)
         screen.blit(text, textRect)
         pygame.display.flip()
-
+        if closeProgram == True:
+            return closeProgram
     
 
         
@@ -167,6 +172,8 @@ class tile(pygame.sprite.Sprite):
 
 
 # variables 
+closeProgram = False
+
 
 # sprite groups
 playerGroup = pygame.sprite.Group()
@@ -223,7 +230,6 @@ for i in map1:
 
 
 
-
 # maps
 
 #game loop
@@ -237,9 +243,12 @@ while not done:
         if event.type == pygame.KEYDOWN:
             # quit application
             if event.key == pygame.K_ESCAPE:
-                openSettings(1000, 1000)   
-                if event.key == pygame.K_ESCAPE:
-                    done = True                    
+                closeProgram = False
+                openSettings(1000, 1000, closeProgram)
+                if closeProgram == True:
+                    done = True
+            # if event.key == pygame.K_BACKSPACE:
+            #    done = True    
                 
             # object updates
             # movement
@@ -248,9 +257,7 @@ while not done:
 
     # drawing
     screen.fill(BLACK)
-
-
-
+    #startMenu(1000, 1000)
     tileGroup.draw(screen)
     playerGroup.draw(screen)
 

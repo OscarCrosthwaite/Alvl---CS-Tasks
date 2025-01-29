@@ -14,29 +14,39 @@ BROWN = (150, 75, 0)
 # screen
 size = (1000, 1000)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("TEMP NAME")
+pygame.display.set_caption("LEGEND OF THE LAND")
+# start screen
+def startMenu():
+    # menu image code
+    menuImage = pygame.image.load("PYGAME/tempStartMenu.png")
+    menuImage = pygame.transform.scale(menuImage, (1000, 1000))
+    closeStartMenu = False
+    while closeStartMenu == False:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                #if event.key == pygame.K_KP_ENTER:
+                    closeStartMenu = True
+                # can add save files at a later date, potentially
+        screen.blit(menuImage, (0, 0))
+        pygame.display.flip()
 # settings screen
 def openSettings(X, Y):
     closeSettings = False
-    # sets font and text size
     font = pygame.font.SysFont('arial', 32)
-    # sets text to write
     text = font.render(str("temp"), True, RED)
-    # creates drawable object containing text
     textRect = text.get_rect()
-    # centers object
     textRect.center = (X // 2, Y // 2)
     # displays text
     while closeSettings == False:
-        #registers keys
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                #closes settings when BACKSPACE pressed
                 if event.key == pygame.K_BACKSPACE:
                     closeSettings = True
                 # add more settings at a later date
                 # volume, accessiblity (difficulty, etc.)
                 # a way to quit the program
+                if event.key == pygame.K_ESCAPE:
+                    closeSettings = True
         # draws settings menu
         screen.fill(WHITE)
         screen.blit(text, textRect)
@@ -194,20 +204,20 @@ map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
 
 # draws mapTemp
-tileXCoord = 0
-tileYCoord = 0
+mapXCoord = 0
+mapYCoord = 0
 for i in map1:
     for j in i:
         if j == 1:
-            tileTemp = tile(tileXCoord, tileYCoord)
+            tileTemp = tile(mapXCoord, mapYCoord)
             tileGroup.add(tileTemp)
         if j == "P":
-            PLAYER = player(tileXCoord, tileYCoord)
+            PLAYER = player(mapXCoord, mapYCoord)
             playerGroup.add(PLAYER)
         #if j == :  etc.
-        tileXCoord += 100
-    tileYCoord += 100
-    tileXCoord = 0
+        mapXCoord += 100
+    mapYCoord += 100
+    mapXCoord = 0
 
         
     
@@ -225,31 +235,22 @@ clock = pygame.time.Clock()
 while not done:
     for event in pygame.event.get():
         keys = pygame.key.get_pressed()
-        if event.type == pygame.QUIT:
-            done = True
         # key inputs
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             # quit application
             if event.key == pygame.K_ESCAPE:
-                openSettings(1000, 1000)                       
+                openSettings(1000, 1000)   
+                if event.key == pygame.K_ESCAPE:
+                    done = True                    
                 
-
-            # player movement
+            # object updates
+            # movement
             playerMapX, playerMapY = PLAYER.movement(event.key, map1, playerMapY, playerMapX)
 
 
-
-            
-            
-        
-            
-    # coding code
-    
-    # update objects
-
-
-    # drawing code
+    # drawing
     screen.fill(BLACK)
+    startMenu()
     tileGroup.draw(screen)
     playerGroup.draw(screen)
 
