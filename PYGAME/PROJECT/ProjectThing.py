@@ -16,21 +16,22 @@ size = (1000, 1000)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("LEGEND OF THE LAND")
 # start screen
-def startMenu():
+def startMenu(X, Y):
     # menu image code
     menuImage = pygame.image.load("PYGAME/tempStartMenu.png")
-    menuImage = pygame.transform.scale(menuImage, (1000, 1000))
+    menuImage = pygame.transform.scale(menuImage, (X, Y))
     closeStartMenu = False
     while closeStartMenu == False:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                #if event.key == pygame.K_KP_ENTER:
-                    closeStartMenu = True
+                if event.type == pygame.K_ESCAPE:
+                    closeStartMenu == True
                 # can add save files at a later date, potentially
         screen.blit(menuImage, (0, 0))
         pygame.display.flip()
 # settings screen
 def openSettings(X, Y):
+    global done
     closeSettings = False
     font = pygame.font.SysFont('arial', 32)
     text = font.render(str("temp"), True, RED)
@@ -40,18 +41,23 @@ def openSettings(X, Y):
     while closeSettings == False:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    closeSettings = True
+                # if event.key == pygame.K_BACKSPACE:
+                #    closeSettings = True
                 # add more settings at a later date
                 # volume, accessiblity (difficulty, etc.)
                 # a way to quit the program
                 if event.key == pygame.K_ESCAPE:
                     closeSettings = True
+                if event.key == pygame.K_BACKSPACE:
+                    closeSettings = True
+                    done = True
+
         # draws settings menu
         screen.fill(WHITE)
         screen.blit(text, textRect)
         pygame.display.flip()
 
+            
     
 
         
@@ -75,12 +81,14 @@ class player(pygame.sprite.Sprite):
         self.xMove = 0
         self.yMove = 0
     # player movement direction
-    def movement(self, input, map, mapY, mapX):
+    def movement(self, input, map, mapY, mapX, worldX, worldY):
         # Calculate movement direction
         newX, newY = mapX, mapY
         if input == 97:  # 'a'
             if mapX == 0:
                 print("placeholder")
+                worldX = worldX - 1
+                groupReset(tileGroup)
             else:
                 if map[mapY][mapX - 1] in traversableTiles:
                     self.xMove = -100
@@ -88,6 +96,8 @@ class player(pygame.sprite.Sprite):
         elif input == 115:  # 's'
             if mapY + 1 == len(map):
                 print("placeholder")
+                worldY = worldY + 1
+                groupReset(tileGroup)
             else:
                 if map[mapY + 1][mapX] in traversableTiles:
                     self.yMove = 100
@@ -95,6 +105,8 @@ class player(pygame.sprite.Sprite):
         elif input == 100:  # 'd'
             if mapX + 1 == len(map[mapY]):
                 print("placeholder")
+                worldX = worldX + 1
+                groupReset(tileGroup)
             else:
                 if map[mapY][mapX + 1] in traversableTiles:
                     self.xMove = 100
@@ -102,6 +114,8 @@ class player(pygame.sprite.Sprite):
         elif input == 119:  # 'w'
             if mapY == 0:
                 print("placeholder")
+                worldY = worldY - 1
+                groupReset(tileGroup)
             else:
                 if map[mapY - 1][mapX] in traversableTiles:
                     self.yMove = -100
@@ -114,7 +128,7 @@ class player(pygame.sprite.Sprite):
         self.xMove = 0
         self.yMove = 0
 
-        return newX, newY
+        return newX, newY, worldX, worldY
 
 
 
@@ -169,29 +183,34 @@ class tile(pygame.sprite.Sprite):
 
 
 # variables 
+# closeProgram = False
+
 
 # sprite groups
 playerGroup = pygame.sprite.Group()
 
 tileGroup = pygame.sprite.Group()
 
-# maps
+
 worldMap = [] # fill with zeros, determine map size later
 
 
 # starting coordinates of player
 playerMapX = 5
 playerMapY = 5
+
 # list of symbols that correspond to tiles that the player can travel through
 traversableTiles = [0, 2, "P"]
 # list of symbols that correspond to tiles that the player cannot travel through
-nonTraversableTiles = [1]
+# nonTraversableTiles = [1]
 
-def createObject(XCoord, YCoord, group, _class):
-    temp = _class(XCoord, YCoord)
-    group.add(temp)
+#def createObject(XCoord, YCoord, group, _class):
+#    temp = _class(XCoord, YCoord)
+#    group.add(temp)
 
-
+# maps
+ 
+# starting map
 map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
             [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
@@ -202,31 +221,55 @@ map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
+# map to the left
+map2 = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
 
-# draws mapTemp
-mapXCoord = 0
-mapYCoord = 0
-for i in map1:
-    for j in i:
-        if j == 1:
-            tileTemp = tile(mapXCoord, mapYCoord)
-            tileGroup.add(tileTemp)
-        if j == "P":
-            PLAYER = player(mapXCoord, mapYCoord)
-            playerGroup.add(PLAYER)
-        #if j == :  etc.
-        mapXCoord += 100
-    mapYCoord += 100
+# world map
+worldMap = [[0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, map2, map1, 0, 0],
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0],]
+worldMapX = 2
+worldMapY = 2
+
+def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
     mapXCoord = 0
+    mapYCoord = 0
+    for i in map:
+        for j in i:
+            if j == 1:
+                tileTemp = tile(mapXCoord, mapYCoord)
+                tileGroup.add(tileTemp)
+            if j == "P":
+                # tempPlayer = player(mapXCoord, mapYCoord)
+                playerGroup.add(tempPlayer)
+            # if j == :... etc.
+            mapXCoord += 100
+        mapYCoord += 100
+        mapXCoord = 0
+    return tileGroup, playerGroup, tileTemp, tempPlayer # enemyGroup, etc.
 
-        
-    
+def groupReset(tileGroup): # enemyGroup, etc.
+    groups = [tileGroup] # enemyGroup, etc.
+    for group in groups:
+        for sprite in group.sprites():
+            sprite.kill()
 
+PLAYER = player(500, 500)
+generateMap(map1, PLAYER, tileGroup, playerGroup)
 
+# generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
 
-
-
-# maps
 
 #game loop
 done = False
@@ -239,18 +282,17 @@ while not done:
         if event.type == pygame.KEYDOWN:
             # quit application
             if event.key == pygame.K_ESCAPE:
-                openSettings(1000, 1000)   
-                if event.key == pygame.K_ESCAPE:
-                    done = True                    
+                openSettings(1000, 1000)
+                
                 
             # object updates
             # movement
-            playerMapX, playerMapY = PLAYER.movement(event.key, map1, playerMapY, playerMapX)
+            playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
 
 
     # drawing
     screen.fill(BLACK)
-    startMenu()
+    #startMenu(1000, 1000)
     tileGroup.draw(screen)
     playerGroup.draw(screen)
 
