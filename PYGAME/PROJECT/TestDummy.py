@@ -10,6 +10,7 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (125, 125, 255)
 BROWN = (150, 75, 0)
+GREY = (100, 100, 100)
 
 # screen
 size = (1000, 1000)
@@ -89,15 +90,20 @@ class player(pygame.sprite.Sprite):
                 print("placeholder")
                 worldX = worldX - 1
                 groupReset(tileGroup)
+                newX = 9 - newX
+                self.rect.x = 900 - self.rect.x
             else:
                 if map[mapY][mapX - 1] in traversableTiles:
                     self.xMove = -100
                     newX -= 1
+
         elif input == 115:  # 's'
             if mapY + 1 == len(map):
                 print("placeholder")
                 worldY = worldY + 1
                 groupReset(tileGroup)
+                newY = 9 - newY
+                self.rect.y = 900 - self.rect.y
             else:
                 if map[mapY + 1][mapX] in traversableTiles:
                     self.yMove = 100
@@ -107,6 +113,8 @@ class player(pygame.sprite.Sprite):
                 print("placeholder")
                 worldX = worldX + 1
                 groupReset(tileGroup)
+                newX = 9 - newX
+                self.rect.x = 900 - self.rect.x
             else:
                 if map[mapY][mapX + 1] in traversableTiles:
                     self.xMove = 100
@@ -116,6 +124,8 @@ class player(pygame.sprite.Sprite):
                 print("placeholder")
                 worldY = worldY - 1
                 groupReset(tileGroup)
+                newY = 9 - newY
+                self.rect.y = 900 - self.rect.y
             else:
                 if map[mapY - 1][mapX] in traversableTiles:
                     self.yMove = -100
@@ -133,14 +143,32 @@ class player(pygame.sprite.Sprite):
 
 
 class tile(pygame.sprite.Sprite):
-    def __init__(self, XCoord, YCoord):
+    def __init__(self, X, Y):
         super().__init__()
         self.image = pygame.Surface([100, 100])
         self.image.fill(BROWN)
         self.rect=self.image.get_rect()
-        self.rect.x = XCoord
-        self.rect.y = YCoord
-#class enemy(pygame.sprite.Sprite):
+        self.rect.x = X
+        self.rect.y = Y
+
+class teleporter(tile):
+    def __init__(self, X, Y):
+        super().__init__(X, Y)
+        self.image.fill(GREY)
+        self.savedMap = worldMap[worldMapY][worldMapX]
+        self.mapReturn = False
+    def teleportCheck(self, playerX, playerY, currentMap):
+        if playerX == self.rect.x and playerY == self.rect.y:
+            groupReset(tileGroup)
+            if self.mapReturn == False:
+                generateMap(caveMap, PLAYER, tileGroup, playerGroup)
+                self.mapReturn = True
+            else:
+                generateMap(self.savedMap, PLAYER, tileGroup, playerGroup)
+                self.mapReturn = False
+    
+
+# class enemy(pygame.sprite.Sprite):
     #def __init__(self, XCoord, YCoord, hitpoints):
         #super().__init__()
         #self.image = pygame.Surface([100, 100])
@@ -212,8 +240,8 @@ traversableTiles = [0, 2, "P"]
  
 # starting map
 map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 2, 1, 0, 0, 0, 0, 0, 1, 1],
+            [1, 2, 1, 1, 0, 0, 0, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [0, 0, 0, 0, 0, "P", 0, 0, 0, 0],
@@ -221,23 +249,73 @@ map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
-# map to the left
-map2 = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+
+caveMap = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            [1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+# 3, 2
+map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 0, 0, 0, 0, 1],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 1, 1, 1, 0, 0, 0, 1],
+        [1, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 1, 0, 1, 1, 1, 1, 1],]
+
+# 3, 4
+map3 = [[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
+
+# 4, 3
+map4 = [[1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        [1, 0, 0, 1, 1, 1, 1, 0, 0, 1],
+        [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 1, 1, 1, 1, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+# 2, 3
+map5 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 0, 0, 0, 0, 1, 0, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
+
+
 
 # world map
 worldMap = [[0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, map2, map1, 0, 0],
-            [0, 0, 0, 0, 0], 
+            [0, 0, map5, 0, 0],
+            [0, map2, map1, map3, 0],
+            [0, 0, map4, 0, 0], 
             [0, 0, 0, 0, 0],]
 
 # coords of current map
@@ -259,6 +337,9 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
             if j == "P":
                 # tempPlayer = player(mapXCoord, mapYCoord)
                 playerGroup.add(tempPlayer)
+            if j == 2:
+                teleporterTemp = teleporter(mapXCoord, mapYCoord)
+                tileGroup.add(teleporterTemp)
             # if j == :... etc.
             mapXCoord += 100
         mapYCoord += 100
@@ -298,7 +379,7 @@ while not done:
             playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
             if tempWorldMapX != worldMapX or tempWorldMapY != worldMapY:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
-
+            teleporter.teleportChecK(playerMapX, playerMapY, worldMap[worldMapY][worldMapX])
 
     # drawing
     screen.fill(BLACK)
