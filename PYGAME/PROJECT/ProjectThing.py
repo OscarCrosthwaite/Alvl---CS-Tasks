@@ -1,4 +1,5 @@
 import pygame, sys, time, random, math
+import heapq
 pygame.init()
 pygame.font.init()
 
@@ -181,60 +182,127 @@ class teleporter(tile):
                 self.mapReturn = False
 
 class enemy(tile):
-    def __init__(self, X, Y):
+    def __init__(self, X, Y, g, h):
         super().__init__(X, Y)
         self.image.fill(RED)
         self.xMove = 0
         self.yMove = 0
         self.mapX = int(X / 100)
         self.mapY = int(Y / 100)
-    def enemyMovement(self, playerMapX, playerMapY, map):
-        # horizontal
-        if playerMapX > self.mapX: # to the right
-            if map[self.mapY][self.mapX + 1] in traversableTiles:
-                self.xMove = 100
-                self.mapX += 1
-        elif playerMapX < self.mapX: # to the left
-            if map[self.mapY][self.mapX - 1] in traversableTiles:
-                self.xMove = -100
-                self.mapX -= 1
 
-        # vertical
-        elif playerMapY < self.mapY: # upwards
-            if map[self.mapY - 1][self.mapX] in traversableTiles:
-                self.yMove = -100
-                self.mapY -= 1
-        elif playerMapX > self.mapX: #downwards
-            if map[self.mapY + 1][self.mapX] in traversableTiles:
-                self.yMove = 100
-                self.mapY += 1
+        # A* attributes
+        self.distance = g
+        self.heuristic = h
+        self.total = g + h # f
+        self.parent = None # parent node
+        self.path = []
+
+    def getMapX(self):
+        return self.mapX
+    def getMapY(self):
+        return self.mapY
+
+    def findHeuristic(self):
+        return abs(self.mapX - playerMapX) + abs(self.mapY - playerMapY)
+
+    def aStarMovement(self, map, occupiedNodes):
+        unvisitedNodes = []
+        startNode = node(self.mapX, self.mapY, 0, self.findHeuristic())
+        heapq.heappush(unvisitedNodes, (0, node(self.mapX, self.mapY, self.distance, self.heuristic))) #(self.mapX, self.mapY)))
+        visitedNodes = set()
+        nodes = {(self.mapX, self.mapY): startNode} # node dictionary
+
+        while unvisitedNodes:
+            _, currentNode = heapq.heappop(unvisitedNodes)
+            if (currentNode.getX(), currentNode.getY()) == (playerMapX, playerMapY):
+                # print("placeholder")
+                while currentNode:
+                    self.path.append((currentNode.getX(), currentNode.getY()))
+                    currentNode = currentNode.parent
+                self.path.reverse()
+                return self.path
+            
+            visitedNodes.add((currentNode.getX(), currentNode.getY()))
+
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = currentNode.getX() + dx, currentNode.getY() + dy
+                if 0 <= nx < 10 and 0 <= ny < 10 and map[ny][nx] == 0 and (nx, ny) not in visitedNodes and (nx, ny) not in occupiedNodes:
+                    # print("placeholder")
+                    g = currentNode.g + 1
+                    h = self.findHeuristic()
+                    neighbour = node(nx, ny, g, h)
+                    if (nx, ny) in nodes:
+                        # neighbour = nodes[(nx, ny)]
+                        if g < neighbour.getG():
+                            neighbour.setG(g)
+                            neighbour.setParent(currentNode)
+                    else:
+
+                        neighbour.setParent(currentNode)
+                        nodes[(nx, ny)] = neighbour
+
+                        heapq.heappush(unvisitedNodes, (neighbour.getTotal(), neighbour))
+
+                    #neighbour = nodes.get((nx, ny), node(nx, ny, g, h))
+                    #if (neighbour[0], neighbour[1]) not in nodes or g < self.distance:
+                    #    g, f, neighbour.parent = g, g+ h, currentNode
+                    #    heapq.heappush(unvisitedNodes, (neighbour.f, neighbour))
+                    #    nodes[(nx, ny)] = neighbour
+                    #self.distance = g        
+
+    def findPath(self, map):
+        occupiedNodes = []
+        for enemyTemp3 in enemyGroup:
+            occupiedNodes.append((enemyTemp3.getMapX(), enemyTemp3.getMapY()))
+        self.path = enemy.aStarMovement(self, map, occupiedNodes)
+
+    def playerDestruction(self):
+        if (self.mapX, self.mapY) == (playerMapX, playerMapY):
+            print("Game Over!")
+    
+    def move(self):
+        if self.path:
+            self.mapX, self.mapY = self.path.pop(1)
+            self.rect.x = self.mapX * 100
+            self.rect.y = self.mapY * 100
+        self.playerDestruction()
         
-        # movement + reset
-        self.rect.x += self.xMove
-        self.rect.y += self.yMove
-        self.xMove = 0
-        self.yMove = 0
+
+class node():
+    def __init__(self, x, y, g, h):
+        self.x = x
+        self.y = y
+        self.g = g
+        self.h = h
+        self.parent = None
+    def getX(self):
+        return self.x
+    def getY(self):
+        return self.y
+    def getG(self):
+        return self.g
+    def setG(self, newG):
+        self.g = newG
+    def getTotal(self):
+        return self.g + self.h
+    def setParent(self, newParent):
+        self.parent = newParent
+    def __lt__(self, other):
+        return self.getTotal() < other.getTotal()
+
+
+
+        
+
+                    
+
+
 
 
 
                 
             
-    
 
-# class enemy(pygame.sprite.Sprite):
-    #def __init__(self, XCoord, YCoord, hitpoints):
-        #super().__init__()
-        #self.image = pygame.Surface([100, 100])
-        #self.image.fill(RED)
-        #self.rect=self.image.get_rect()
-        #self.rect.x = XCoord
-        #self.rect.y = YCoord
-        #self.hitpoints = hitpoints
-    #def idle(self, )
-    #def chase(self, )
-    #def hurt(self, )
-    #def die(self, )
-    #def attack(self, ) - POLYMORPHISM
 
 #class item(pygame.sprite.Sprite):
     #def __init__(self, XCoord, YCoord):
@@ -318,8 +386,6 @@ caveMap = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 inCaveMap = False
-
-# 3, 2
 map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
@@ -331,7 +397,6 @@ map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
         [1, 1, 0, 1, 0, 0, 0, 0, 0, 1],
         [1, 1, 0, 1, 0, 1, 1, 1, 1, 1],]
 
-# 3, 4
 map3 = [[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
         [1, 0, 0, 1, 1, 0, 0, 0, 0, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -343,7 +408,6 @@ map3 = [[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
         [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
         [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
 
-# 4, 3
 map4 = [[1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
         [1, 1, 0, 0, 0, 0, 1, 1, 0, 1],
         [1, 1, 0, 1, 0, 1, 1, 0, 0, 1],
@@ -355,7 +419,6 @@ map4 = [[1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 
-# 2, 3
 map5 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
@@ -630,14 +693,14 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
                 tileGroup.add(teleporterTemp)
                 teleporterGroup.add(teleporterTemp)
             if j == 3:
-                enemyTemp = enemy(mapXCoord, mapYCoord)
+                enemyTemp = enemy(mapXCoord, mapYCoord, 0, 0)
                 tileGroup.add(enemyTemp)
                 enemyGroup.add(enemyTemp)
             # if j == :... etc.
             mapXCoord += 100
         mapYCoord += 100
         mapXCoord = 0
-    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup # enemyGroup, etc.
+    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup, enemyGroup # enemyGroup, etc.
 
 def groupReset(): # enemyGroup, etc.
     groups = [tileGroup] # enemyGroup, etc.
@@ -671,7 +734,8 @@ while not done:
             tempWorldMapY = worldMapY
             playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
             for enemyTemp2 in enemyGroup:
-                enemyTemp2.enemyMovement(playerMapX, playerMapY, worldMap[worldMapY][worldMapX])
+                enemyTemp2.findPath(worldMap[worldMapY][worldMapX])
+                enemyTemp2.move()
 
             if tempWorldMapX != worldMapX or tempWorldMapY != worldMapY:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)

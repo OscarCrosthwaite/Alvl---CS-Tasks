@@ -59,6 +59,34 @@ def openSettings(X, Y):
         screen.blit(text, textRect)
         pygame.display.flip()
 
+def gameOver():
+    global done, playerMapX, playerMapY, worldMapX, worldMapY, PLAYER
+    closeGameOver = False
+    font = pygame.font.SysFont('arial', 32)
+    text = font.render(str("Press 'R' to retry"), True, RED)
+    textRect = text.get_rect()
+    textRect.center = (500, 400)
+    text2 = font.render(str("Press 'ESC' to quit"), True, RED)
+    textRect2 = text2.get_rect()
+    textRect2.center = (500, 600)
+
+    while closeGameOver == False:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    closeGameOver = True
+                if event.key == pygame.K_ESCAPE:
+                    closeGameOver = True
+                    done = True
+        screen.fill(BLACK)
+        screen.blit(text, textRect)
+        screen.blit(text2, textRect2)
+        pygame.display.flip()
+    groupReset()
+    PLAYER.resetPlayerPosition()
+    playerMapX, playerMapY, worldMapX, worldMapY  = 5, 5, 2, 2
+    generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
+
             
     
 
@@ -87,6 +115,10 @@ class player(pygame.sprite.Sprite):
         return self.rect.x
     def getPlayerY(self):
         return self.rect.y
+    def resetPlayerPosition(self):
+        self.rect.x = 500
+        self.rect.y = 500
+
     def movement(self, input, map, mapY, mapX, worldX, worldY):
         # Calculate movement direction
         newX, newY = mapX, mapY
@@ -197,10 +229,15 @@ class enemy(tile):
         self.parent = None # parent node
         self.path = []
 
+    def getMapX(self):
+        return self.mapX
+    def getMapY(self):
+        return self.mapY
+
     def findHeuristic(self):
         return abs(self.mapX - playerMapX) + abs(self.mapY - playerMapY)
 
-    def aStarMovement(self, map):
+    def aStarMovement(self, map, occupiedNodes):
         unvisitedNodes = []
         startNode = node(self.mapX, self.mapY, 0, self.findHeuristic())
         heapq.heappush(unvisitedNodes, (0, node(self.mapX, self.mapY, self.distance, self.heuristic))) #(self.mapX, self.mapY)))
@@ -210,6 +247,7 @@ class enemy(tile):
         while unvisitedNodes:
             _, currentNode = heapq.heappop(unvisitedNodes)
             if (currentNode.getX(), currentNode.getY()) == (playerMapX, playerMapY):
+                # print("placeholder")
                 while currentNode:
                     self.path.append((currentNode.getX(), currentNode.getY()))
                     currentNode = currentNode.parent
@@ -220,7 +258,8 @@ class enemy(tile):
 
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nx, ny = currentNode.getX() + dx, currentNode.getY() + dy
-                if 0 <= nx < 10 and 0 <= ny < 10 and map[ny][nx] == 0 and (nx, ny) not in visitedNodes:
+                if 0 <= nx < 10 and 0 <= ny < 10 and map[ny][nx] == 0 and (nx, ny) not in visitedNodes and (nx, ny) not in occupiedNodes:
+                    # print("placeholder")
                     g = currentNode.g + 1
                     h = self.findHeuristic()
                     neighbour = node(nx, ny, g, h)
@@ -244,13 +283,22 @@ class enemy(tile):
                     #self.distance = g        
 
     def findPath(self, map):
-        self.path = enemy.aStarMovement(self, map)
+        occupiedNodes = []
+        for enemyTemp3 in enemyGroup:
+            occupiedNodes.append((enemyTemp3.getMapX(), enemyTemp3.getMapY()))
+        self.path = enemy.aStarMovement(self, map, occupiedNodes)
+
+    def playerDestruction(self):
+        if (self.mapX, self.mapY) == (playerMapX, playerMapY):
+            gameOver()
     
     def move(self):
         if self.path:
-            self.mapX, self.mapY = self.path.pop(0)
+            self.mapX, self.mapY = self.path.pop(1)
             self.rect.x = self.mapX * 100
             self.rect.y = self.mapY * 100
+        self.playerDestruction()
+        
 
 class node():
     def __init__(self, x, y, g, h):
@@ -684,7 +732,7 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
             mapXCoord += 100
         mapYCoord += 100
         mapXCoord = 0
-    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup # enemyGroup, etc.
+    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup, enemyGroup # enemyGroup, etc.
 
 def groupReset(): # enemyGroup, etc.
     groups = [tileGroup] # enemyGroup, etc.
