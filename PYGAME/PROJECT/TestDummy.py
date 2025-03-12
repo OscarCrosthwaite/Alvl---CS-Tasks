@@ -1,4 +1,5 @@
 import pygame, sys, time, random, math
+import heapq
 pygame.init()
 pygame.font.init()
 
@@ -82,6 +83,10 @@ class player(pygame.sprite.Sprite):
         self.xMove = 0
         self.yMove = 0
     # player movement direction
+    def getPlayerX(self):
+        return self.rect.x
+    def getPlayerY(self):
+        return self.rect.y
     def movement(self, input, map, mapY, mapX, worldX, worldY):
         # Calculate movement direction
         newX, newY = mapX, mapY
@@ -89,7 +94,7 @@ class player(pygame.sprite.Sprite):
             if mapX == 0:
                 print("placeholder")
                 worldX = worldX - 1
-                groupReset(tileGroup)
+                groupReset()
                 newX = 9 - newX
                 self.rect.x = 900 - self.rect.x
             else:
@@ -101,7 +106,7 @@ class player(pygame.sprite.Sprite):
             if mapY + 1 == len(map):
                 print("placeholder")
                 worldY = worldY + 1
-                groupReset(tileGroup)
+                groupReset()
                 newY = 9 - newY
                 self.rect.y = 900 - self.rect.y
             else:
@@ -112,7 +117,7 @@ class player(pygame.sprite.Sprite):
             if mapX + 1 == len(map[mapY]):
                 print("placeholder")
                 worldX = worldX + 1
-                groupReset(tileGroup)
+                groupReset()
                 newX = 9 - newX
                 self.rect.x = 900 - self.rect.x
             else:
@@ -123,7 +128,7 @@ class player(pygame.sprite.Sprite):
             if mapY == 0:
                 print("placeholder")
                 worldY = worldY - 1
-                groupReset(tileGroup)
+                groupReset()
                 newY = 9 - newY
                 self.rect.y = 900 - self.rect.y
             else:
@@ -152,36 +157,136 @@ class tile(pygame.sprite.Sprite):
         self.rect.y = Y
 
 class teleporter(tile):
-    def __init__(self, X, Y):
+    def __init__(self, X, Y, mapTemp):
         super().__init__(X, Y)
         self.image.fill(GREY)
-        self.savedMap = worldMap[worldMapY][worldMapX]
+        self.savedMap = mapTemp
         self.mapReturn = False
-    def teleportCheck(self, playerX, playerY, currentMap):
+
+    def getTeleportX(self):
+        return self.rect.x
+    def getTeleportY(self):
+        return self.rect.y    
+    def getMap(self):
+        return self.savedMap
+    def getMapReturn(self):
+        return self.mapReturn
+    def teleportCheck(self, playerX, playerY):
         if playerX == self.rect.x and playerY == self.rect.y:
-            groupReset(tileGroup)
+            groupReset()
             if self.mapReturn == False:
                 generateMap(caveMap, PLAYER, tileGroup, playerGroup)
                 self.mapReturn = True
-            else:
-                generateMap(self.savedMap, PLAYER, tileGroup, playerGroup)
+            elif self.mapReturn == True:
+                generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
                 self.mapReturn = False
-    
 
-# class enemy(pygame.sprite.Sprite):
-    #def __init__(self, XCoord, YCoord, hitpoints):
-        #super().__init__()
-        #self.image = pygame.Surface([100, 100])
-        #self.image.fill(RED)
-        #self.rect=self.image.get_rect()
-        #self.rect.x = XCoord
-        #self.rect.y = YCoord
-        #self.hitpoints = hitpoints
-    #def idle(self, )
-    #def chase(self, )
-    #def hurt(self, )
-    #def die(self, )
-    #def attack(self, ) - POLYMORPHISM
+class enemy(tile):
+    def __init__(self, X, Y, g, h):
+        super().__init__(X, Y)
+        self.image.fill(RED)
+        self.xMove = 0
+        self.yMove = 0
+        self.mapX = int(X / 100)
+        self.mapY = int(Y / 100)
+
+        # A* attributes
+        self.distance = g
+        self.heuristic = h
+        self.total = g + h # f
+        self.parent = None # parent node
+        self.path = []
+
+    def findHeuristic(self):
+        return abs(self.mapX - playerMapX) + abs(self.mapY - playerMapY)
+
+    def aStarMovement(self, map):
+        unvisitedNodes = []
+        startNode = node(self.mapX, self.mapY, 0, self.findHeuristic())
+        heapq.heappush(unvisitedNodes, (0, node(self.mapX, self.mapY, self.distance, self.heuristic))) #(self.mapX, self.mapY)))
+        visitedNodes = set()
+        nodes = {(self.mapX, self.mapY): startNode} # node dictionary
+
+        while unvisitedNodes:
+            _, currentNode = heapq.heappop(unvisitedNodes)
+            if (currentNode.getX(), currentNode.getY()) == (playerMapX, playerMapY):
+                while currentNode:
+                    self.path.append((currentNode.getX(), currentNode.getY()))
+                    currentNode = currentNode.parent
+                self.path.reverse()
+                return self.path
+            
+            visitedNodes.add((currentNode.getX(), currentNode.getY()))
+
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = currentNode.getX() + dx, currentNode.getY() + dy
+                if 0 <= nx < 10 and 0 <= ny < 10 and map[ny][nx] == 0 and (nx, ny) not in visitedNodes:
+                    g = currentNode.g + 1
+                    h = self.findHeuristic()
+                    neighbour = node(nx, ny, g, h)
+                    if (nx, ny) in nodes:
+                        # neighbour = nodes[(nx, ny)]
+                        if g < neighbour.getG():
+                            neighbour.setG(g)
+                            neighbour.setParent(currentNode)
+                    else:
+
+                        neighbour.setParent(currentNode)
+                        nodes[(nx, ny)] = neighbour
+
+                        heapq.heappush(unvisitedNodes, (neighbour.getTotal(), neighbour))
+
+                    #neighbour = nodes.get((nx, ny), node(nx, ny, g, h))
+                    #if (neighbour[0], neighbour[1]) not in nodes or g < self.distance:
+                    #    g, f, neighbour.parent = g, g+ h, currentNode
+                    #    heapq.heappush(unvisitedNodes, (neighbour.f, neighbour))
+                    #    nodes[(nx, ny)] = neighbour
+                    #self.distance = g        
+
+    def findPath(self, map):
+        self.path = enemy.aStarMovement(self, map)
+    
+    def move(self):
+        if self.path:
+            self.mapX, self.mapY = self.path.pop(0)
+            self.rect.x = self.mapX * 100
+            self.rect.y = self.mapY * 100
+
+class node():
+    def __init__(self, x, y, g, h):
+        self.x = x
+        self.y = y
+        self.g = g
+        self.h = h
+        self.parent = None
+    def getX(self):
+        return self.x
+    def getY(self):
+        return self.y
+    def getG(self):
+        return self.g
+    def setG(self, newG):
+        self.g = newG
+    def getTotal(self):
+        return self.g + self.h
+    def setParent(self, newParent):
+        self.parent = newParent
+    def __lt__(self, other):
+        return self.getTotal() < other.getTotal()
+
+
+
+        
+
+                    
+
+
+
+
+
+                
+            
+
 
 #class item(pygame.sprite.Sprite):
     #def __init__(self, XCoord, YCoord):
@@ -219,6 +324,10 @@ playerGroup = pygame.sprite.Group()
 
 tileGroup = pygame.sprite.Group()
 
+teleporterGroup = pygame.sprite.Group()
+
+enemyGroup = pygame.sprite.Group()
+
 
 worldMap = [] # fill with zeros, determine map size later
 
@@ -228,9 +337,9 @@ playerMapX = 5
 playerMapY = 5
 
 # list of symbols that correspond to tiles that the player can travel through
-traversableTiles = [0, 2, "P"]
+traversableTiles = [0, 2, 3, "P"]
 # list of symbols that correspond to tiles that the player cannot travel through
-# nonTraversableTiles = [1]
+# nonTraversableTiles = [1, 3]
 
 #def createObject(XCoord, YCoord, group, _class):
 #    temp = _class(XCoord, YCoord)
@@ -260,8 +369,7 @@ caveMap = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
-
-# 3, 2
+inCaveMap = False
 map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
@@ -273,50 +381,277 @@ map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
         [1, 1, 0, 1, 0, 0, 0, 0, 0, 1],
         [1, 1, 0, 1, 0, 1, 1, 1, 1, 1],]
 
-# 3, 4
 map3 = [[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+        [1, 0, 0, 1, 0, 1, 1, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
         [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
 
-# 4, 3
 map4 = [[1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 1, 1, 0, 1],
+        [1, 1, 0, 1, 0, 1, 1, 0, 0, 1],
         [1, 0, 0, 1, 1, 1, 1, 0, 0, 1],
-        [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 1, 1, 1, 1, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 1, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 1, 1, 0, 0, 0, 1, 1],
+        [1, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+        [1, 1, 0, 0, 1, 1, 1, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
 
-# 2, 3
 map5 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 0, 0, 1],
+        [1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 1, 0, 0, 0, 0, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
         [1, 1, 0, 0, 0, 0, 1, 0, 1, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
 
+map6 = [[1, 1, 0, 1, 0, 1, 1, 1, 1, 1],
+        [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 0, 1, 1, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [0, 3, 0, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 3, 0, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
+
+map7 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
+        [1, 0, 1, 1, 1, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+        [1, 0, 1, 0, 1, 0, 0, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 0, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map8 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+        [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],]
+
+map9 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map10 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 0, 1, 0, 1, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 1, 1, 1, 1],
+        [1, 0, 1, 0, 1, 0, 1, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],]
+
+map11 = [[1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+        [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+        [1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 1, 1, 1, 0, 0],
+        [1, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1],]
+
+map12 = [[1, 0, 1, 1, 1, 1, 0, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map13 = [[1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map14 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map15 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1, 0, 0, 1, 0, 1],
+        [0, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map16 = [[1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 1, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 1, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],]
+
+map17 = [[1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map18 = [[1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
+        [1, 1, 0, 0, 0, 1, 1, 1, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],]
+
+map19 = [[1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 1, 0, 0, 0, 0],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+        [1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 0, 0, 1],]
+
+map20 = [[1, 1, 1, 1, 1, 1, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+        [0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
+        [0, 0, 0, 1, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+        [1, 1, 1, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 1, 1, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 1, 0, 1, 1],
+        [1, 1, 0, 0, 0, 1, 1, 1, 1, 1],]
+
+map21 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 1, 1, 1, 1, 0, 1, 1],
+        [1, 0, 0, 1, 0, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 0, 0, 0, 1],]
+
+map22 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 1, 1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 1, 0, 1, 1],
+        [1, 1, 1, 0, 0, 1, 1, 0, 1, 1],
+        [1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+        [1, 1, 0, 0, 1, 1, 0, 0, 1, 1],]
+
+map23 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+        [1, 1, 0, 1, 0, 0, 0, 0, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 0, 0, 1, 1, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+map24 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 0, 0, 1, 1, 0, 1],
+        [1, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+mapBoss = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
+
+mapTemplate = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
 
 
 # world map
-worldMap = [[0, 0, 0, 0, 0],
-            [0, 0, map5, 0, 0],
-            [0, map2, map1, map3, 0],
-            [0, 0, map4, 0, 0], 
-            [0, 0, 0, 0, 0],]
+worldMap = [[mapBoss, map24, map23, map22, map21],
+            [map9, map8, map5, map19, map20],
+            [map10, map2, map1, map3, map18],
+            [map11, map6, map4, map7, map16], 
+            [map12, map13, map14, map15, map17],]
 
 # coords of current map
 worldMapX = 2
@@ -338,15 +673,20 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
                 # tempPlayer = player(mapXCoord, mapYCoord)
                 playerGroup.add(tempPlayer)
             if j == 2:
-                teleporterTemp = teleporter(mapXCoord, mapYCoord)
+                teleporterTemp = teleporter(mapXCoord, mapYCoord, worldMap[worldMapY][worldMapX])
                 tileGroup.add(teleporterTemp)
+                teleporterGroup.add(teleporterTemp)
+            if j == 3:
+                enemyTemp = enemy(mapXCoord, mapYCoord, 0, 0)
+                tileGroup.add(enemyTemp)
+                enemyGroup.add(enemyTemp)
             # if j == :... etc.
             mapXCoord += 100
         mapYCoord += 100
         mapXCoord = 0
-    return tileGroup, playerGroup, tileTemp, tempPlayer # enemyGroup, etc.
+    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup # enemyGroup, etc.
 
-def groupReset(tileGroup): # enemyGroup, etc.
+def groupReset(): # enemyGroup, etc.
     groups = [tileGroup] # enemyGroup, etc.
     for group in groups:
         for sprite in group.sprites():
@@ -355,7 +695,7 @@ def groupReset(tileGroup): # enemyGroup, etc.
 PLAYER = player(500, 500)
 generateMap(map1, PLAYER, tileGroup, playerGroup)
 
-# generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
+
 
 
 #game loop
@@ -377,10 +717,21 @@ while not done:
             tempWorldMapX = worldMapX
             tempWorldMapY = worldMapY
             playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
+            for enemyTemp2 in enemyGroup:
+                enemyTemp2.findPath(worldMap[worldMapY][worldMapX])
+                enemyTemp2.move()
+
             if tempWorldMapX != worldMapX or tempWorldMapY != worldMapY:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
-            teleporter.teleportChecK(playerMapX, playerMapY, worldMap[worldMapY][worldMapX])
 
+      #      for teleTemp in teleporterGroup.sprites():
+	 #           if teleTemp.getMap() == worldMap[worldMapY][worldMapX]:
+    #                    teleTemp.teleportCheck(PLAYER.getPlayerX(), PLAYER.getPlayerY())
+   #                     if teleTemp.getMapReturn() == False:
+  #                          playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, caveMap, playerMapY, playerMapX, worldMapX, worldMapY)
+ #                       else:
+#                            playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
+             
     # drawing
     screen.fill(BLACK)
     #startMenu(1000, 1000)
