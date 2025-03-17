@@ -59,6 +59,34 @@ def openSettings(X, Y):
         screen.blit(text, textRect)
         pygame.display.flip()
 
+def gameOver():
+    global done, playerMapX, playerMapY, worldMapX, worldMapY, PLAYER
+    closeGameOver = False
+    font = pygame.font.SysFont('arial', 32)
+    text = font.render(str("Press 'R' to retry"), True, RED)
+    textRect = text.get_rect()
+    textRect.center = (500, 400)
+    text2 = font.render(str("Press 'ESC' to quit"), True, RED)
+    textRect2 = text2.get_rect()
+    textRect2.center = (500, 600)
+
+    while closeGameOver == False:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    closeGameOver = True
+                if event.key == pygame.K_ESCAPE:
+                    closeGameOver = True
+                    done = True
+        screen.fill(BLACK)
+        screen.blit(text, textRect)
+        screen.blit(text2, textRect2)
+        pygame.display.flip()
+    groupReset()
+    PLAYER.resetPlayerPosition()
+    playerMapX, playerMapY, worldMapX, worldMapY  = 5, 5, 2, 2
+    generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
+
             
     
 
@@ -87,6 +115,10 @@ class player(pygame.sprite.Sprite):
         return self.rect.x
     def getPlayerY(self):
         return self.rect.y
+    def resetPlayerPosition(self):
+        self.rect.x = 500
+        self.rect.y = 500
+
     def movement(self, input, map, mapY, mapX, worldX, worldY):
         # Calculate movement direction
         newX, newY = mapX, mapY
@@ -144,6 +176,10 @@ class player(pygame.sprite.Sprite):
         self.yMove = 0
 
         return newX, newY, worldX, worldY
+    
+    def attack(self):
+        
+        print()
 
 
 
@@ -196,6 +232,7 @@ class enemy(tile):
         self.total = g + h # f
         self.parent = None # parent node
         self.path = []
+
 
     def getMapX(self):
         return self.mapX
@@ -258,7 +295,7 @@ class enemy(tile):
 
     def playerDestruction(self):
         if (self.mapX, self.mapY) == (playerMapX, playerMapY):
-            print("Game Over!")
+            gameOver()
     
     def move(self):
         if self.path:
@@ -468,7 +505,7 @@ map9 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [1, 1, 0, 3, 0, 0, 0, 0, 0, 0],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
