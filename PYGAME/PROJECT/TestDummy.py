@@ -27,6 +27,11 @@ chestImage = pygame.image.load('PYGAME/PROJECT/PICTURES/chest.png')
 tileImage = pygame.image.load('PYGAME/PROJECT/PICTURES/rockyTile.png')
 enemyImage = pygame.image.load('PYGAME/PROJECT/PICTURES/enemy.png')
 bossImage = pygame.image.load('PYGAME/PROJECT/PICTURES/boss.png')
+swordImage = pygame.image.load('PYGAME/PROJECT/PICTURES/sword.png')
+playerDown = pygame.image.load('PYGAME/PROJECT/PICTURES/playerDown.png')
+playerLeft = pygame.image.load('PYGAME/PROJECT/PICTURES/playerLeft.png')
+playerRight = pygame.image.load('PYGAME/PROJECT/PICTURES/playerRight.png')
+playerUp = pygame.image.load('PYGAME/PROJECT/PICTURES/playerUp.png')
 
 def startMenu():
     # menu image code
@@ -243,16 +248,16 @@ class player(pygame.sprite.Sprite):
     
     def swordAttack(self, input, enemyGroup, swordGroup):
         if input == 97:  # 'a'
-            self.killEnemies(-100, 0, enemyGroup, swordGroup, "horizontal")
+            self.killEnemies(-100, 0, enemyGroup, swordGroup, "horizontal", "left")
         elif input == 115:  # 's'
-            self.killEnemies(0, 100, enemyGroup, swordGroup, "vertical")
+            self.killEnemies(0, 100, enemyGroup, swordGroup, "vertical", "down")
         elif input == 100:  # 'd'
-            self.killEnemies(100, 0, enemyGroup, swordGroup, "horizontal")
+            self.killEnemies(100, 0, enemyGroup, swordGroup, "horizontal", "right")
         elif input == 119:  # 'w'
-            self.killEnemies(0, -100, enemyGroup, swordGroup, "vertical")
+            self.killEnemies(0, -100, enemyGroup, swordGroup, "vertical", "up")
 
-    def killEnemies(self, inputX, inputY, enemyGroup, swordGroup, orientation):
-        swordTemp = sword(self.rect.x + inputX, self.rect.y + inputY, orientation)
+    def killEnemies(self, inputX, inputY, enemyGroup, swordGroup, orientation, direction):
+        swordTemp = sword(self.rect.x + inputX, self.rect.y + inputY, orientation, direction)
         swordGroup.add(swordTemp)
 
         #pygame.display.update()
@@ -301,19 +306,28 @@ class tile(pygame.sprite.Sprite):
         return self.rect.y
 
 class sword(pygame.sprite.Sprite):
-    def __init__(self, X , Y, orientation):
+    def __init__(self, X , Y, orientation, direction):
         super().__init__()
         if orientation == "horizontal":
-            self.image = pygame.Surface([100, 10])
+            self.image = pygame.transform.scale(swordImage, (100, 100))
             self.rect = self.image.get_rect()
             self.rect.x = X
-            self.rect.y = Y + 49
-        elif orientation == "vertical":
-            self.image = pygame.Surface([10, 100])
-            self.rect = self.image.get_rect()
-            self.rect.x = X + 49
             self.rect.y = Y
-        self.image.fill(YELLOW)
+        elif orientation == "vertical":
+            self.image = pygame.transform.scale(swordImage, (100, 100))
+            self.rect = self.image.get_rect()
+            self.rect.x = X
+            self.rect.y = Y
+        if direction == "left":
+            self.image = pygame.transform.rotate(self.image, 0)
+        if direction == "up":
+            self.image = pygame.transform.rotate(self.image, 90)
+        elif direction == "left":
+            self.image = pygame.transform.rotate(self.image, 180)
+        elif direction == "down":
+            self.image = pygame.transform.rotate(self.image, 270)
+
+
         
 
 
