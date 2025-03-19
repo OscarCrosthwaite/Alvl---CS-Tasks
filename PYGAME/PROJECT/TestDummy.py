@@ -21,19 +21,26 @@ size = (1000, 1000)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("LEGEND OF THE LAND")
 # start screen
-def startMenu(X, Y):
+
+startMenuImage = pygame.image.load('PYGAME/PROJECT/PICTURES/startMenuImage.png')
+chestImage = pygame.image.load('PYGAME/PROJECT/PICTURES/chest.png')
+tileImage = pygame.image.load('PYGAME/PROJECT/PICTURES/rockyTile.png')
+enemyImage = pygame.image.load('PYGAME/PROJECT/PICTURES/enemy.png')
+bossImage = pygame.image.load('PYGAME/PROJECT/PICTURES/boss.png')
+
+def startMenu():
     # menu image code
-    menuImage = pygame.image.load("PYGAME/tempStartMenu.png")
-    menuImage = pygame.transform.scale(menuImage, (X, Y))
+    menuImage = pygame.transform.scale(startMenuImage, (1000, 1000))
     closeStartMenu = False
     while closeStartMenu == False:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.type == pygame.K_ESCAPE:
-                    closeStartMenu == True
+                if event.key == pygame.K_ESCAPE:
+                    closeStartMenu = True
                 # can add save files at a later date, potentially
         screen.blit(menuImage, (0, 0))
         pygame.display.flip()
+
 # settings screen
 def openSettings():
     global done, coins
@@ -118,6 +125,31 @@ def gameOver():
     PLAYER.resetPlayerPosition()
     playerMapX, playerMapY, worldMapX, worldMapY  = 5, 5, 2, 2
     generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
+
+def victoryScreen():
+    global coins, done
+    closeVictoryScreen = False
+    font = pygame.font.SysFont('arial', 32)
+    if coins > 50:
+        text = font.render(str("You have completed the game and got all the coins! Congratulations!"), True, RED)
+    else: 
+        text = font.render(str("You have completed the game! Congratulations!"), True, RED)
+    textRect = text.get_rect()
+    textRect.center = (500, 500)
+    text2 = font.render(str("Press 'ESC' to quit"), True, RED)
+    textRect2 = text2.get_rect()
+    textRect2.center = (500, 600)
+    screen.fill(BLACK)
+    while closeVictoryScreen == False:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    closeVictoryScreen = True
+                    done = True
+        screen.blit(text, textRect)
+        pygame.display.flip()
+
+
 
             
     
@@ -259,8 +291,7 @@ class player(pygame.sprite.Sprite):
 class tile(pygame.sprite.Sprite):
     def __init__(self, X, Y):
         super().__init__()
-        self.image = pygame.Surface([100, 100])
-        self.image.fill(BROWN)
+        self.image = pygame.transform.scale(tileImage, (100, 100))
         self.rect=self.image.get_rect()
         self.rect.x = X
         self.rect.y = Y
@@ -268,31 +299,6 @@ class tile(pygame.sprite.Sprite):
         return self.rect.x
     def getY(self):
         return self.rect.y
-
-class teleporter(tile):
-    def __init__(self, X, Y, mapTemp):
-        super().__init__(X, Y)
-        self.image.fill(GREY)
-        self.savedMap = mapTemp
-        self.mapReturn = False
-
-    def getTeleportX(self):
-        return self.rect.x
-    def getTeleportY(self):
-        return self.rect.y    
-    def getMap(self):
-        return self.savedMap
-    def getMapReturn(self):
-        return self.mapReturn
-    def teleportCheck(self, playerX, playerY):
-        if playerX == self.rect.x and playerY == self.rect.y:
-            groupReset()
-            if self.mapReturn == False:
-                generateMap(caveMap, PLAYER, tileGroup, playerGroup)
-                self.mapReturn = True
-            elif self.mapReturn == True:
-                generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
-                self.mapReturn = False
 
 class sword(pygame.sprite.Sprite):
     def __init__(self, X , Y, orientation):
@@ -347,7 +353,7 @@ class bullet(pygame.sprite.Sprite):
 class chest(tile):
     def __init__(self, X, Y):
         super().__init__(X, Y)
-        self.image.fill(CYAN)
+        self.image = pygame.transform.scale(chestImage, (100, 100))
         self.value = random.randint(1, 50)
         self.opened = False
     
@@ -357,6 +363,13 @@ class chest(tile):
             coins += self.value
             self.opened = True
             self.image.fill(BLACK)
+
+class victory(chest):
+    def __init__(self, X, Y):
+        super().__init__(X, Y)
+    
+    def open(self):
+        victoryScreen()
             
         
 
@@ -365,7 +378,7 @@ class chest(tile):
 class enemy(tile):
     def __init__(self, X, Y, g, h):
         super().__init__(X, Y)
-        self.image.fill(RED)
+        self.image = pygame.transform.scale(enemyImage, (100, 100))
         self.xMove = 0
         self.yMove = 0
         self.mapX = int(X / 100)
@@ -450,12 +463,10 @@ class enemy(tile):
         self.playerDestruction()
         
 class boss(enemy):
-    def __init__(self, X, Y, g, h):
+    def __init__(self, X, Y, g, h, lives):
         super().__init__(X, Y, g, h)
-        self.image = pygame.Surface([200, 200])
-        self.image.fill(PURPLE)
-    
-    def victory(self):
+        self.image = pygame.transform.scale(bossImage, (200, 200))
+
 
 
         
@@ -537,8 +548,6 @@ playerGroup = pygame.sprite.Group()
 
 tileGroup = pygame.sprite.Group()
 
-teleporterGroup = pygame.sprite.Group()
-
 enemyGroup = pygame.sprite.Group()
 
 swordGroup = pygame.sprite.Group()
@@ -558,7 +567,7 @@ playerMapX = 5
 playerMapY = 5
 
 # list of symbols that correspond to tiles that the player can travel through
-traversableTiles = [0, 2, 3, 4, "P"]
+traversableTiles = [0, 2, 3, 4, 5, 6,"P"]
 # list of symbols that correspond to tiles that the player cannot travel through
 # nonTraversableTiles = [1, 3]
 
@@ -580,17 +589,6 @@ map1 =      [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],]
 
-caveMap = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-            [1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],]
-inCaveMap = False
 map2 = [[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
         [1, 0, 4, 0, 1, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
@@ -849,7 +847,7 @@ mapBoss = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 6, 0, 5, 0, 0, 0, 0, 0, 0],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -893,10 +891,6 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
             if j == "P":
                 # tempPlayer = player(mapXCoord, mapYCoord)
                 playerGroup.add(tempPlayer)
-            if j == 2:
-                teleporterTemp = teleporter(mapXCoord, mapYCoord, worldMap[worldMapY][worldMapX])
-                tileGroup.add(teleporterTemp)
-                teleporterGroup.add(teleporterTemp)
             if j == 3:
                 enemyTemp = enemy(mapXCoord, mapYCoord, 0, 0)
                 tileGroup.add(enemyTemp)
@@ -906,15 +900,19 @@ def generateMap(map, tempPlayer, tileGroup, playerGroup): # enemyGroup, etc.
                 tileGroup.add(chestTemp)
                 chestGroup.add(chestTemp)
             if j == 5:
-                bossTemp = boss(mapXCoord, mapYCoord, 0, 0)
+                bossTemp = boss(mapXCoord, mapYCoord, 0, 0, 3)
                 tileGroup.add(bossTemp)
                 enemyGroup.add(bossTemp)
                 bossGroup.add(bossTemp)
+            if j == 6:
+                victoryTemp = victory(mapXCoord, mapYCoord)
+                tileGroup.add(victoryTemp)
+                chestGroup.add(victoryTemp)
             # if j == :... etc.
             mapXCoord += 100
         mapYCoord += 100
         mapXCoord = 0
-    return tileGroup, playerGroup, tileTemp, tempPlayer, teleporterGroup, enemyGroup, chestGroup, bossGroup # enemyGroup, etc.
+    return tileGroup, playerGroup, tileTemp, tempPlayer, enemyGroup, chestGroup, bossGroup # enemyGroup, etc.
 
 def groupReset(): # enemyGroup, etc.
     groups = [tileGroup, arrowGroup] # enemyGroup, etc.
@@ -932,7 +930,7 @@ generateMap(map1, PLAYER, tileGroup, playerGroup)
 done = False
 clock = pygame.time.Clock()
 
-
+startMenu()
 while not done:
     for event in pygame.event.get():
         keys = pygame.key.get_pressed()
@@ -955,16 +953,18 @@ while not done:
             # movement
             tempWorldMapX = worldMapX
             tempWorldMapY = worldMapY
+
             playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
+
             for enemyTemp2 in enemyGroup:
                 enemyTemp2.findPath(worldMap[worldMapY][worldMapX])
                 enemyTemp2.move()
+
             killedEnemies = []
             for enemyTemp4 in enemyGroup:
                 for swordTemp in swordGroup:
                     if swordTemp.rect.colliderect(enemyTemp4.rect):
                         killedEnemies.append(enemyTemp4)
-            
                 for enemyTemp5 in killedEnemies:
                     enemyTemp5.kill()
                     coins += random.randint(1, 10)
@@ -982,19 +982,13 @@ while not done:
                     if arrowTemp.rect.colliderect(tileTemp2.rect):
                         arrowTemp.kill()
                 
-
-
             if tempWorldMapX != worldMapX or tempWorldMapY != worldMapY:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
             tempKey = event.key
-      #      for teleTemp in teleporterGroup.sprites():
-	 #           if teleTemp.getMap() == worldMap[worldMapY][worldMapX]:
-    #                    teleTemp.teleportCheck(PLAYER.getPlayerX(), PLAYER.getPlayerY())
-   #                     if teleTemp.getMapReturn() == False:
-  #                          playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, caveMap, playerMapY, playerMapX, worldMapX, worldMapY)
- #                       else:
-#                            playerMapX, playerMapY, worldMapX, worldMapY = PLAYER.movement(event.key, worldMap[worldMapY][worldMapX], playerMapY, playerMapX, worldMapX, worldMapY)
-             
+            
+
+
+
     # drawing
     screen.fill(BLACK)
     #startMenu(1000, 1000)
@@ -1002,6 +996,7 @@ while not done:
     playerGroup.draw(screen)
     swordGroup.draw(screen)
     arrowGroup.draw(screen)
+    bossGroup.draw(screen)
 
     # end of game loop
     pygame.display.flip()
