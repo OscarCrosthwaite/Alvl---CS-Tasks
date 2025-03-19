@@ -1,5 +1,6 @@
 import pygame, sys, time, random, math
 import heapq
+import threading
 pygame.init()
 pygame.font.init()
 
@@ -177,9 +178,28 @@ class player(pygame.sprite.Sprite):
 
         return newX, newY, worldX, worldY
     
-    def attack(self):
-        
-        print()
+    def attack(self, input, enemyGroup, swordGroup):
+        if input == 97:  # 'a'
+            self.killEnemies(-100, 0, enemyGroup, swordGroup, "horizontal")
+        elif input == 115:  # 's'
+            self.killEnemies(0, 100, enemyGroup, swordGroup, "vertical")
+        elif input == 100:  # 'd'
+            self.killEnemies(100, 0, enemyGroup, swordGroup, "horizontal")
+        elif input == 119:  # 'w'
+            self.killEnemies(0, -100, enemyGroup, swordGroup, "vertical")
+
+    def killEnemies(self, inputX, inputY, enemyGroup, swordGroup, orientation):
+        swordTemp = sword(self.rect.x + inputX, self.rect.y + inputY, orientation)
+        swordGroup.add(swordTemp)
+        killedEnemies = []
+        for enemyTemp4 in enemyGroup:
+            if swordTemp.rect.colliderect(enemyTemp4.rect):
+                killedEnemies.append(enemyTemp4)
+        for enemyTemp5 in killedEnemies:
+            enemyTemp5.kill()
+                
+
+
 
 
 
@@ -191,6 +211,10 @@ class tile(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x = X
         self.rect.y = Y
+    def getX(self):
+        return self.rect.x
+    def getY(self):
+        return self.rect.y
 
 class teleporter(tile):
     def __init__(self, X, Y, mapTemp):
@@ -216,6 +240,34 @@ class teleporter(tile):
             elif self.mapReturn == True:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
                 self.mapReturn = False
+
+class sword(pygame.sprite.Sprite):
+    def __init__(self, X , Y, orientation):
+        super().__init__()
+        if orientation == "horizontal":
+            self.image = pygame.Surface([100, 10])
+            self.rect = self.image.get_rect()
+            self.rect.x = X
+            self.rect.y = Y + 49
+        elif orientation == "vertical":
+            self.image = pygame.Surface([10, 100])
+            self.rect = self.image.get_rect()
+            self.rect.x = X + 49
+            self.rect.y = Y
+        self.image.fill(YELLOW)
+        
+
+
+        # animation time
+        self.timer = threading.Timer((1), self.cooldown)
+        self.timer.start()
+    
+    def cooldown(self):
+        self.kill()
+
+
+
+
 
 class enemy(tile):
     def __init__(self, X, Y, g, h):
@@ -369,6 +421,9 @@ class node():
 
 
 # variables 
+tempKey = None
+
+
 # closeProgram = False
 
 
@@ -380,6 +435,8 @@ tileGroup = pygame.sprite.Group()
 teleporterGroup = pygame.sprite.Group()
 
 enemyGroup = pygame.sprite.Group()
+
+swordGroup = pygame.sprite.Group()
 
 
 worldMap = [] # fill with zeros, determine map size later
@@ -513,7 +570,7 @@ map9 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 map10 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 3, 0, 0, 0, 0, 1, 1, 1, 1],
         [1, 0, 1, 0, 1, 0, 1, 1, 1, 1],
         [1, 0, 0, 0, 1, 0, 1, 1, 1, 1],
         [1, 0, 1, 0, 1, 0, 1, 0, 0, 0],
@@ -763,6 +820,8 @@ while not done:
             # quit application
             if event.key == pygame.K_ESCAPE:
                 openSettings(1000, 1000)
+            if event.key == pygame.K_e:
+                PLAYER.attack(tempKey, enemyGroup, swordGroup)
                 
                 
             # object updates
@@ -776,7 +835,7 @@ while not done:
 
             if tempWorldMapX != worldMapX or tempWorldMapY != worldMapY:
                 generateMap(worldMap[worldMapY][worldMapX], PLAYER, tileGroup, playerGroup)
-
+            tempKey = event.key
       #      for teleTemp in teleporterGroup.sprites():
 	 #           if teleTemp.getMap() == worldMap[worldMapY][worldMapX]:
     #                    teleTemp.teleportCheck(PLAYER.getPlayerX(), PLAYER.getPlayerY())
@@ -790,6 +849,7 @@ while not done:
     #startMenu(1000, 1000)
     tileGroup.draw(screen)
     playerGroup.draw(screen)
+    swordGroup.draw(screen)
 
     # end of game loop
     pygame.display.flip()
